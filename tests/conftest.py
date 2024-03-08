@@ -1,28 +1,44 @@
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from typing import Any
 
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.db import Base, Meta
+from app.main import app
 from app.settings import settings
+
+
+@pytest.fixture(autouse=True)
+def db_init(engine):
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+
+@pytest.fixture
+def test_client():
+    client = TestClient(app)
+    return client
 
 
 @pytest.fixture(scope="module")
 def engine():
-    engine = None
-    create_engine(settings.test_database.get_secret_value())
+    engine = create_engine(settings.database.get_secret_value())
     assert engine is not None
     return engine
 
 
 @pytest.fixture
 def db_session(engine):
-    session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     def get_db():
-        db = session_local()
+        sess = local_session()
         try:
-            yield db
+            yield sess
         finally:
-            db.close()
+            sess.close()
 
     return get_db
 
@@ -32,3 +48,21 @@ def db_api(db_session):
     s = db_session()
     yield next(s)
     s.close()
+
+
+@pytest.fixture
+def json_basic_menu_position() -> dict[str, Any]:
+    return {
+        "name": "test_menu",
+        "price": 10.0,
+        "description": "test_description",
+        "preparation_time": 10,
+        "is_vegan": False,
+    }
+
+
+@pytest.fixture
+def json_basic_menu() -> dict[str, Any]:
+    return {
+        "name": "test_menu",
+    }
