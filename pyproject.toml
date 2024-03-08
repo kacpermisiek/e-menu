@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "e-menu"
+name = "app"
 version = "0.1.0"
 description = ""
 authors = ["Kacper Misiek <315560@uwr.edu.pl>"]
@@ -7,7 +7,15 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+fastapi = "^0.110.0"
+sqlalchemy = "^2.0.28"
+pydantic-settings = "^2.2.1"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+pytest = "^8.0.2"
+isort = "^5.13.2"
 
 [build-system]
 requires = ["poetry-core"]
