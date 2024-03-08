@@ -14,4 +14,4 @@ app = FastAPI(
 )
 
 
-app.include_router(menu.public, tags=["Menu"])
+app.include_router(menu.public, prefix="/api/menu", tags=["Menu"])

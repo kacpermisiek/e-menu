@@ -17,7 +17,7 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
-menu_menu_position = Table(
+MenuMenuPosition = Table(
     "menu_menu_position",
     Base.metadata,
     Column("menu_id", UUID, ForeignKey("menu.id")),
@@ -39,7 +39,7 @@ class MenuPosition(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     menus = relationship(
-        "Menu", secondary=menu_menu_position, back_populates="positions"
+        "Menu", secondary=MenuMenuPosition, back_populates="positions"
     )
 
 
@@ -51,7 +51,7 @@ class Menu(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     positions = relationship(
-        "MenuPosition", secondary=menu_menu_position, back_populates="menus"
+        "MenuPosition", secondary=MenuMenuPosition, back_populates="menus"
     )
 
     created_at = Column(DateTime, default=func.now())
