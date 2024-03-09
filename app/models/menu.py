@@ -11,22 +11,24 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-Base = declarative_base()
+from app.db import Base
 
 MenuMenuPosition = Table(
     "menu_menu_position",
     Base.metadata,
-    Column("menu_id", UUID, ForeignKey("menu.id")),
-    Column("menu_position_id", UUID, ForeignKey("menu_position.id")),
+    Column("menu_id", UUID, ForeignKey("menu.id", ondelete="CASCADE")),
+    Column(
+        "menu_position_id", UUID, ForeignKey("menu_position.id", ondelete="CASCADE")
+    ),
 )
 
 
 class MenuPosition(Base):
     __tablename__ = "menu_position"
+    __table_args__ = (UniqueConstraint("name", name="uq_menu_position_name"),)
 
     id = Column(UUID, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
@@ -39,7 +41,10 @@ class MenuPosition(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     menus = relationship(
-        "Menu", secondary=MenuMenuPosition, back_populates="positions"
+        "Menu",
+        secondary=MenuMenuPosition,
+        back_populates="positions",
+        cascade="all, delete",
     )
 
 
@@ -49,10 +54,13 @@ class Menu(Base):
 
     id = Column(UUID, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    positions = relationship(
-        "MenuPosition", secondary=MenuMenuPosition, back_populates="menus"
-    )
 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    positions = relationship(
+        "MenuPosition",
+        secondary=MenuMenuPosition,
+        back_populates="menus",
+        cascade="all, delete",
+    )

@@ -1,8 +1,11 @@
 from typing import Any
 
 from pydantic import SecretStr
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+Base = declarative_base()
+Meta = MetaData()
 
 
 def get_session(database_dsn: SecretStr) -> Any:

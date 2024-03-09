@@ -44,10 +44,12 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        'menu_menu_position',
-        sa.Column('menu_id', UUID, sa.ForeignKey('menu.id'), nullable=False),
-        sa.Column('menu_position_id', UUID, sa.ForeignKey('menu_position.id'), nullable=False),
-        sa.PrimaryKeyConstraint('menu_id', 'menu_position_id')
+        "menu_menu_position",
+        sa.Column("menu_id", UUID, sa.ForeignKey("menu.id"), nullable=False),
+        sa.Column(
+            "menu_position_id", UUID, sa.ForeignKey("menu_position.id"), nullable=False
+        ),
+        sa.PrimaryKeyConstraint("menu_id", "menu_position_id"),
     )
 
 
