@@ -20,7 +20,9 @@ MenuMenuPosition = Table(
     "menu_menu_position",
     Base.metadata,
     Column("menu_id", UUID, ForeignKey("menu.id", ondelete="CASCADE")),
-    Column("menu_position_id", UUID, ForeignKey("menu_position.id", ondelete="CASCADE")),
+    Column(
+        "menu_position_id", UUID, ForeignKey("menu_position.id", ondelete="CASCADE")
+    ),
 )
 
 
@@ -38,7 +40,12 @@ class MenuPosition(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    menus = relationship("Menu", secondary=MenuMenuPosition, back_populates="positions", cascade="all, delete")
+    menus = relationship(
+        "Menu",
+        secondary=MenuMenuPosition,
+        back_populates="positions",
+        cascade="all, delete",
+    )
 
 
 class Menu(Base):
@@ -52,5 +59,8 @@ class Menu(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     positions = relationship(
-        "MenuPosition", secondary=MenuMenuPosition, back_populates="menus", cascade="all, delete"
+        "MenuPosition",
+        secondary=MenuMenuPosition,
+        back_populates="menus",
+        cascade="all, delete",
     )

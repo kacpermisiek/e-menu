@@ -56,8 +56,8 @@ def test_create_many_menu_positions_should_add_positions_to_database(
     menu_positions = db_api.query(MenuPosition).all()
     assert len(menu_positions) == 0
 
-    for _ in range(10):
-        json_basic_menu_position["name"] = json_basic_menu_position["name"] + str(_)
+    for i in range(10):
+        json_basic_menu_position["name"] = json_basic_menu_position["name"] + str(i)
         res = test_client.post(
             "api/admin/menu/menu_position", json=json_basic_menu_position
         )
@@ -178,7 +178,9 @@ def test_patch_menu_position_should_return_proper_value_and_change_it_in_db(
     assert res.json()[name] == new_value
 
 
-def test_patch_menu_should_change_updated_at_parameter(db_api, test_client, json_basic_menu_position):
+def test_patch_menu_should_change_updated_at_parameter(
+    db_api, test_client, json_basic_menu_position
+):
     res = test_client.post(
         "api/admin/menu/menu_position", json=json_basic_menu_position
     )
@@ -296,7 +298,9 @@ def test_delete_menu_position_should_return_menu_position_parameters(
     assert res.json()["name"] == json_basic_menu_position["name"]
     assert res.json()["price"] == json_basic_menu_position["price"]
     assert res.json()["description"] == json_basic_menu_position["description"]
-    assert res.json()["preparation_time"] == json_basic_menu_position["preparation_time"]
+    assert (
+        res.json()["preparation_time"] == json_basic_menu_position["preparation_time"]
+    )
     assert res.json()["is_vegan"] == json_basic_menu_position["is_vegan"]
     assert res.json()["created_at"] == res.json()["updated_at"]
     assert res.json()["id"] is not None

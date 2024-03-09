@@ -20,7 +20,9 @@ def test_create_new_menu_should_return_created_message(test_client, json_basic_m
     assert res.status_code == HTTPStatus.CREATED, res.text
 
 
-def test_create_new_menu_should_create_new_record_in_db(test_client, db_api, json_basic_menu):
+def test_create_new_menu_should_create_new_record_in_db(
+    test_client, db_api, json_basic_menu
+):
     res = test_client.post("/api/admin/menu", json=json_basic_menu)
 
     menu = db_api.query(Menu).get(res.json()["id"])
@@ -56,3 +58,44 @@ def test_patch_menu_should_return_ok_message(test_client, json_basic_menu):
 
     res = test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
     assert res.status_code == HTTPStatus.OK, res.text
+
+
+def test_patch_menu_should_update_record_in_db(test_client, db_api, json_basic_menu):
+    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+    assert res.status_code == HTTPStatus.CREATED, res.text
+
+    menu_id = res.json()["id"]
+
+    res = test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menu = db_api.query(Menu).get(menu_id)
+    assert menu.name == "new_name"
+
+
+def test_delete_menu_should_return_ok_message(test_client, json_basic_menu):
+    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+    assert res.status_code == HTTPStatus.CREATED, res.text
+
+    menu_id = res.json()["id"]
+
+    res = test_client.delete(f"/api/admin/menu/{menu_id}")
+    assert res.status_code == HTTPStatus.OK, res.text
+
+
+def test_delete_menu_should_delete_record_in_db(test_client, db_api, json_basic_menu):
+    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+    assert res.status_code == HTTPStatus.CREATED, res.text
+
+    menu_id = res.json()["id"]
+
+    res = test_client.delete(f"/api/admin/menu/{menu_id}")
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menu = db_api.query(Menu).get(menu_id)
+    assert menu is None
+
+
+def test_delete_menu_with_wrong_id_should_return_not_found(test_client):
+    res = test_client.delete(f"/api/admin/menu/{uuid.uuid4()}")
+    assert res.status_code == HTTPStatus.NOT_FOUND, res.text

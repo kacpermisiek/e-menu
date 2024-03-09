@@ -1,3 +1,5 @@
+import uuid
+
 from typing import Any
 
 import pytest
@@ -5,8 +7,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.db import Base, Meta
+from app.db import Base
 from app.main import app
+from app.models.menu import MenuPosition
 from app.settings import settings
 
 
@@ -66,3 +69,11 @@ def json_basic_menu() -> dict[str, Any]:
     return {
         "name": "test_menu",
     }
+
+
+@pytest.fixture
+def with_menu_position(db_api, json_basic_menu_position):
+    identifier = uuid.uuid4()
+    db_api.add(MenuPosition(**json_basic_menu_position | {"id": identifier}))
+    db_api.commit()
+    return identifier

@@ -4,18 +4,18 @@ import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.db import Base
+from app.api.utils import update_table
 from app.models.menu import Menu, MenuPosition
 from app.schemas.menu import (
     MenuPositionCreateSchema,
     MenuPositionPatchSchema,
     MenuPositionSchema,
     MenuPositionUpdateSchema,
-    MenuSchema, MenuCreateSchema,
+    MenuSchema,
+    MenuCreateSchema,
 )
 from app.utils.enums import UpdateMethod
 
@@ -23,7 +23,9 @@ admin = APIRouter()
 public = APIRouter()
 
 
-@admin.post("/menu_position", response_model=MenuPositionSchema, status_code=HTTPStatus.CREATED)
+@admin.post(
+    "/menu_position", response_model=MenuPositionSchema, status_code=HTTPStatus.CREATED
+)
 def create_menu_position(
     menu_position: MenuPositionCreateSchema, db: Session = Depends(get_db())
 ):
@@ -45,32 +47,6 @@ def get_menu_position(menu_position_id: uuid.UUID, db: Session = Depends(get_db(
         raise HTTPException(status_code=404, detail="Menu position not found")
 
     return menu_position
-
-
-def update_table(
-    db: Session,
-    row_identifier: uuid.UUID,
-    update_model: BaseModel,
-    schema: Base,
-    return_schema: Base,
-    method: str,
-):
-    row = db.query(schema).get(row_identifier)
-    if row is None:
-        raise HTTPException(status_code=404, detail="Object not found")
-
-    if method == UpdateMethod.PATCH:
-        update_data = update_model.dict(exclude_unset=True, exclude_none=True)
-    else:
-        update_data = update_model.dict(exclude_unset=True)
-
-    for key, value in update_data.items():
-        if hasattr(row, key):
-            setattr(row, key, value)
-
-    db.add(row)
-    db.commit()
-    return return_schema.from_orm(row)
 
 
 @admin.patch("/menu_position/{menu_position_id}", response_model=MenuPositionSchema)
@@ -152,3 +128,30 @@ def patch_menu(
         return_schema=MenuSchema,
         method=UpdateMethod.PATCH,
     )
+
+
+@admin.put("/{menu_id}", response_model=MenuSchema)
+def update_menu(
+    menu_id: uuid.UUID,
+    menu_update: MenuCreateSchema,
+    db: Session = Depends(get_db()),
+):
+    return update_table(
+        db=db,
+        row_identifier=menu_id,
+        update_model=menu_update,
+        schema=Menu,
+        return_schema=MenuSchema,
+        method=UpdateMethod.PUT,
+    )
+
+
+@admin.delete("/{menu_id}", response_model=MenuSchema)
+def delete_menu(menu_id: uuid.UUID, db: Session = Depends(get_db())):
+    menu = db.query(Menu).get(menu_id)
+    if menu is None:
+        raise HTTPException(status_code=404, detail="Menu not found")
+
+    db.delete(menu)
+    db.commit()
+    return menu
