@@ -1,21 +1,19 @@
 from http import HTTPStatus
-
-import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.api.utils import update_table
+from app.api.utils import get_menu_and_position, menu_contains_position, update_table
 from app.models.menu import Menu, MenuPosition
 from app.schemas.menu import (
+    MenuCreateSchema,
     MenuPositionCreateSchema,
     MenuPositionPatchSchema,
     MenuPositionSchema,
     MenuPositionUpdateSchema,
     MenuSchema,
-    MenuCreateSchema,
 )
 from app.utils.enums import UpdateMethod
 
@@ -42,7 +40,7 @@ def get_menu_positions(db: Session = Depends(get_db())):
 
 @admin.get("/menu_position/{menu_position_id}", response_model=MenuPositionSchema)
 def get_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
-    menu_position = db.query(MenuPosition).get(menu_position_id)
+    menu_position = db.get(MenuPosition, menu_position_id)
     if menu_position is None:
         raise HTTPException(status_code=404, detail="Menu position not found")
 
@@ -83,9 +81,12 @@ def update_menu_position(
 
 @admin.delete("/menu_position/{menu_position_id}", response_model=MenuPositionSchema)
 def delete_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
-    menu_position = db.query(MenuPosition).get(menu_position_id)
+    menu_position = db.get(MenuPosition, menu_position_id)
     if menu_position is None:
         raise HTTPException(status_code=404, detail="Menu position not found")
+
+    for menu in menu_position.menus:
+        menu.positions.remove(menu_position)
 
     db.delete(menu_position)
     db.commit()
@@ -99,7 +100,7 @@ def get_menus(db: Session = Depends(get_db())):
 
 @public.get("/{menu_id}", response_model=MenuSchema)
 def get_menu(menu_id: int, db: Session = Depends(get_db())):
-    menu = db.query(Menu).get(menu_id)
+    menu = db.get(Menu, menu_id)
     if menu is None:
         raise HTTPException(status_code=404, detail="Menu not found")
 
@@ -148,10 +149,46 @@ def update_menu(
 
 @admin.delete("/{menu_id}", response_model=MenuSchema)
 def delete_menu(menu_id: int, db: Session = Depends(get_db())):
-    menu = db.query(Menu).get(menu_id)
+    menu = db.get(Menu, menu_id)
     if menu is None:
         raise HTTPException(status_code=404, detail="Menu not found")
 
     db.delete(menu)
+    db.commit()
+    return menu
+
+
+@admin.post("/{menu_id}/add_position/{menu_position_id}", response_model=MenuSchema)
+def add_position_to_menu(
+    menu_id: int,
+    menu_position_id: int,
+    db: Session = Depends(get_db()),
+):
+    menu, menu_position = get_menu_and_position(db, menu_id, menu_position_id)
+
+    if menu_contains_position(db, menu_id, menu_position_id):
+        raise HTTPException(
+            status_code=400, detail="Menu and position connection already exists"
+        )
+
+    menu.positions.append(menu_position)
+    db.commit()
+    return menu
+
+
+@admin.post("/{menu_id}/remove_position/{menu_position_id}", response_model=MenuSchema)
+def remove_position_from_menu(
+    menu_id: int,
+    menu_position_id: int,
+    db: Session = Depends(get_db()),
+):
+    menu, menu_position = get_menu_and_position(db, menu_id, menu_position_id)
+
+    if not menu_contains_position(db, menu_id, menu_position_id):
+        raise HTTPException(
+            status_code=400, detail="Menu and position connection does not exist"
+        )
+
+    menu.positions.remove(menu_position)
     db.commit()
     return menu

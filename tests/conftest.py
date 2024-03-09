@@ -1,5 +1,4 @@
 import uuid
-
 from typing import Any
 
 import pytest
@@ -9,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.db import Base
 from app.main import app
-from app.models.menu import MenuPosition
+from app.models.menu import Menu, MenuPosition
 from app.settings import settings
 
 
@@ -56,7 +55,7 @@ def db_api(db_session):
 @pytest.fixture
 def json_basic_menu_position() -> dict[str, Any]:
     return {
-        "name": "test_menu",
+        "name": "pizza",
         "price": 10.0,
         "description": "test_description",
         "preparation_time": 10,
@@ -73,7 +72,24 @@ def json_basic_menu() -> dict[str, Any]:
 
 @pytest.fixture
 def with_menu_position(db_api, json_basic_menu_position):
-    identifier = uuid.uuid4()
-    db_api.add(MenuPosition(**json_basic_menu_position | {"id": identifier}))
+    menu_position = MenuPosition(**json_basic_menu_position)
+    db_api.add(menu_position)
     db_api.commit()
-    return identifier
+    return menu_position
+
+
+@pytest.fixture
+def with_menu(db_api, json_basic_menu):
+    menu = Menu(**json_basic_menu)
+    db_api.add(menu)
+    db_api.commit()
+    return menu
+
+
+@pytest.fixture
+def with_menu_with_position(db_api, json_basic_menu, with_menu_position):
+    menu = Menu(**json_basic_menu)
+    menu.positions.append(with_menu_position)
+    db_api.add(menu)
+    db_api.commit()
+    return menu
