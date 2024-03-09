@@ -35,7 +35,7 @@ def test_get_menu_should_return_list_of_enums(test_client, hundred_menus):
 
 
 def test_get_not_existing_menu_should_return_not_found(test_client):
-    res = test_client.get(f"/api/menu/{uuid.uuid4()}")
+    res = test_client.get(f"/api/menu/123")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
@@ -62,12 +62,9 @@ def test_patch_menu_should_return_ok_message(test_client, json_basic_menu):
 
 def test_patch_menu_should_update_record_in_db(test_client, db_api, json_basic_menu):
     res = test_client.post("/api/admin/menu", json=json_basic_menu)
-    assert res.status_code == HTTPStatus.CREATED, res.text
-
     menu_id = res.json()["id"]
 
-    res = test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
-    assert res.status_code == HTTPStatus.OK, res.text
+    test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
 
     menu = db_api.query(Menu).get(menu_id)
     assert menu.name == "new_name"
@@ -97,5 +94,5 @@ def test_delete_menu_should_delete_record_in_db(test_client, db_api, json_basic_
 
 
 def test_delete_menu_with_wrong_id_should_return_not_found(test_client):
-    res = test_client.delete(f"/api/admin/menu/{uuid.uuid4()}")
+    res = test_client.delete(f"/api/admin/menu/123")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text

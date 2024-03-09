@@ -120,7 +120,7 @@ def test_get_zero_menu_positions_should_return_empty_list(db_api, test_client):
 def test_get_not_existing_menu_position_should_return_http_error(
     test_client,
 ):
-    res = test_client.get(f"api/admin/menu/menu_position/{uuid.uuid4()}")
+    res = test_client.get(f"api/admin/menu/menu_position/6661")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
@@ -134,7 +134,7 @@ def test_get_existing_menu_position_should_return_proper_position(
     assert res.status_code == HTTPStatus.OK, res.text
 
     menu_position_response = res.json()
-    assert menu_position_response["id"] == str(menu_position.id)
+    assert menu_position_response["id"] == menu_position.id
     assert menu_position_response["name"] == menu_position.name
     assert menu_position_response["price"] == menu_position.price
     assert menu_position_response["description"] == menu_position.description
@@ -146,7 +146,7 @@ def test_get_existing_menu_position_should_return_proper_position(
 
 @pytest.mark.parametrize(
     "menu_position_id",
-    [1, "test", "test-test", "test_test", "deadbeefdeadbeefdeadbeefdead"],
+    ["test", "test-test", "test_test", "deadbeefdeadbeefdeadbeefdead"],
 )
 def test_get_menu_position_with_wrong_format_of_id_should_raise_http_error(
     test_client, menu_position_id
@@ -219,7 +219,7 @@ def test_patch_menu_position_with_wrong_id_should_raise_http_error(
     test_client, json_basic_menu_position
 ):
     res = test_client.patch(
-        f"api/admin/menu/menu_position/{uuid.uuid4()}", json=json_basic_menu_position
+        f"api/admin/menu/menu_position/123", json=json_basic_menu_position
     )
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
@@ -271,7 +271,7 @@ def test_update_menu_position_with_wrong_id_should_raise_http_error(
     test_client, json_basic_menu_position
 ):
     res = test_client.put(
-        f"api/admin/menu/menu_position/{uuid.uuid4()}", json=json_basic_menu_position
+        f"api/admin/menu/menu_position/235235234", json=json_basic_menu_position
     )
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
@@ -279,7 +279,7 @@ def test_update_menu_position_with_wrong_id_should_raise_http_error(
 def test_delete_menu_position_with_wrong_id_should_raise_http_error(
     test_client,
 ):
-    res = test_client.delete(f"api/admin/menu/menu_position/{uuid.uuid4()}")
+    res = test_client.delete(f"api/admin/menu/menu_position/12314523423423423")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 

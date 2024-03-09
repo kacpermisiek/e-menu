@@ -19,9 +19,9 @@ from app.db import Base
 MenuMenuPosition = Table(
     "menu_menu_position",
     Base.metadata,
-    Column("menu_id", UUID, ForeignKey("menu.id", ondelete="CASCADE")),
+    Column("menu_id", Integer, ForeignKey("menu.id", ondelete="CASCADE")),
     Column(
-        "menu_position_id", UUID, ForeignKey("menu_position.id", ondelete="CASCADE")
+        "menu_position_id", Integer, ForeignKey("menu_position.id", ondelete="CASCADE")
     ),
 )
 
@@ -30,7 +30,7 @@ class MenuPosition(Base):
     __tablename__ = "menu_position"
     __table_args__ = (UniqueConstraint("name", name="uq_menu_position_name"),)
 
-    id = Column(UUID, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     price = Column(Float, nullable=False)
     description = Column(Text, nullable=True)
