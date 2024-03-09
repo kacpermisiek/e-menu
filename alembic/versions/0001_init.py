@@ -22,7 +22,14 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         "menu_position",
-        sa.Column("id", sa.Integer, primary_key=True, index=True, nullable=False, autoincrement=True),
+        sa.Column(
+            "id",
+            sa.Integer,
+            primary_key=True,
+            index=True,
+            nullable=False,
+            autoincrement=True,
+        ),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("price", sa.Float, nullable=False),
         sa.Column("description", sa.Text, nullable=True),
@@ -34,7 +41,14 @@ def upgrade() -> None:
 
     op.create_table(
         "menu",
-        sa.Column("id", sa.Integer, primary_key=True, index=True, nullable=False, autoincrement=True),
+        sa.Column(
+            "id",
+            sa.Integer,
+            primary_key=True,
+            index=True,
+            nullable=False,
+            autoincrement=True,
+        ),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("description", sa.Text, nullable=True),
         sa.Column("created_at", sa.DateTime, nullable=False),
@@ -46,7 +60,10 @@ def upgrade() -> None:
         "menu_menu_position",
         sa.Column("menu_id", sa.Integer, sa.ForeignKey("menu.id"), nullable=False),
         sa.Column(
-            "menu_position_id", sa.Integer, sa.ForeignKey("menu_position.id"), nullable=False
+            "menu_position_id",
+            sa.Integer,
+            sa.ForeignKey("menu_position.id"),
+            nullable=False,
         ),
         sa.PrimaryKeyConstraint("menu_id", "menu_position_id"),
     )

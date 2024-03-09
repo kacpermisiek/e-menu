@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from app.models.menu import MenuPosition, Menu
+from app.models.menu import Menu, MenuPosition
 
 
 @pytest.fixture

@@ -10,7 +10,6 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -52,7 +51,7 @@ class Menu(Base):
     __tablename__ = "menu"
     __table_args__ = (UniqueConstraint("name", name="uq_menu_name"),)
 
-    id = Column(UUID, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
 
     created_at = Column(DateTime, default=func.now())
