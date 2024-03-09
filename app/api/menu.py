@@ -3,6 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.api.deps import get_db
 from app.api.utils import get_menu_and_position, menu_contains_position, update_table
@@ -14,6 +15,7 @@ from app.schemas.menu import (
     MenuPositionSchema,
     MenuPositionUpdateSchema,
     MenuSchema,
+    MenusQuerySchema,
 )
 from app.utils.enums import UpdateMethod
 
@@ -94,8 +96,24 @@ def delete_menu_position(menu_position_id: int, db: Session = Depends(get_db()))
 
 
 @public.get("/", response_model=List[MenuSchema])
-def get_menus(db: Session = Depends(get_db())):
-    return db.query(Menu).all()
+def get_menus(query: MenusQuerySchema = Depends(), db: Session = Depends(get_db())):
+    results = db.query(Menu).order_by(query.sortby)
+    if query.name:
+        results = results.filter(func.lower(Menu.name).like(f"%{query.name.lower()}%"))
+
+    if query.created_before:
+        results = results.filter(Menu.created_at <= query.created_before)
+
+    if query.created_after:
+        results = results.filter(Menu.created_at >= query.created_after)
+
+    if query.updated_before:
+        results = results.filter(Menu.updated_at <= query.updated_before)
+
+    if query.updated_after:
+        results = results.filter(Menu.updated_at >= query.updated_after)
+
+    return results.order_by(query.sortby).all()
 
 
 @public.get("/{menu_id}", response_model=MenuSchema)

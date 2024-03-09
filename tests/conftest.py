@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import uuid
 from typing import Any
 
@@ -93,3 +95,17 @@ def with_menu_with_position(db_api, json_basic_menu, with_menu_position):
     db_api.add(menu)
     db_api.commit()
     return menu
+
+
+@pytest.fixture
+def with_menus_with_different_dates(db_api, with_menu_position):
+    menus = []
+    for i, date in enumerate(
+        [datetime(2021, 1, 1), datetime(2022, 1, 1), datetime(2023, 1, 1)]
+    ):
+        menu = Menu(name=f"menu_{i}", created_at=date, updated_at=date)
+        db_api.add(menu)
+        menu.positions.append(with_menu_position)
+        db_api.commit()
+        menus.append(menu)
+    return menus

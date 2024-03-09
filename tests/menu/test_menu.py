@@ -1,3 +1,6 @@
+import pytest
+from datetime import datetime
+
 import uuid
 from http import HTTPStatus
 
@@ -252,3 +255,88 @@ def test_remove_position_from_db_should_remove_it_from_menu(
 
     db_api.refresh(menu)
     assert len(menu.positions) == 0
+
+
+def test_get_menus_should_be_sorted_by_name_by_default(test_client, db_api):
+    for name in ["some", "random", "names"]:
+        db_api.add(Menu(name=name))
+    db_api.commit()
+
+    res = test_client.get("/api/menu")
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menus = res.json()
+    assert len(menus) == 3
+    assert menus[0]["name"] == "names"
+    assert menus[1]["name"] == "random"
+    assert menus[2]["name"] == "some"
+
+
+def test_get_menus_filtered_by_name_should_return_filtered_list(test_client, db_api):
+    for name in ["some", "ransom", "names"]:
+        db_api.add(Menu(name=name))
+    db_api.commit()
+
+    res = test_client.get("/api/menu", params={"name": "so"})
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menus = res.json()
+    assert len(menus) == 2
+    assert menus[0]["name"] == "ransom"
+    assert menus[1]["name"] == "some"
+
+
+def test_get_menus_filtered_by_created_after_should_return_filtered_list(
+    test_client, db_api, with_menus_with_different_dates
+):
+    res = test_client.get("/api/menu", params={"created_after": "2022-01-01T00:00:00"})
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menus = res.json()
+    assert len(menus) == 2
+    assert menus[0]["name"] == "menu_1"
+    assert menus[1]["name"] == "menu_2"
+
+
+@pytest.mark.parametrize(
+    "params, expected_names",
+    [
+        ({"created_before": "2022-01-01T00:00:00"}, ["menu_0", "menu_1"]),
+        ({"created_after": "2022-01-01T00:00:00"}, ["menu_1", "menu_2"]),
+        ({"updated_before": "2022-01-01T00:00:00"}, ["menu_0", "menu_1"]),
+        ({"updated_after": "2022-01-01T00:00:00"}, ["menu_1", "menu_2"]),
+        (
+            {
+                "created_after": "2021-12-31T00:00:00",
+                "created_before": "2022-01-02T00:00:00",
+            },
+            ["menu_1"],
+        ),
+        (
+            {
+                "created_after": "2021-12-31T00:00:00",
+                "created_before": "2022-01-02T00:00:00",
+                "name": "menu_1",
+            },
+            ["menu_1"],
+        ),
+        (
+            {
+                "created_after": "2021-12-31T00:00:00",
+                "created_before": "2022-01-02T00:00:00",
+                "name": "menu_2",
+            },
+            [],
+        ),
+    ],
+)
+def test_get_filtered_menus_should_return_filtered_list(
+    test_client, db_api, with_menus_with_different_dates, params, expected_names
+):
+    res = test_client.get("/api/menu", params=params)
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    menus = res.json()
+    assert len(menus) == len(expected_names)
+    for i, menu in enumerate(menus):
+        assert menu["name"] == expected_names[i]

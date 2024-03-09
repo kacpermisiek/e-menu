@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db import Base
-from app.models.menu import Menu, MenuMenuPosition, MenuPosition
+from app.models.menu import Menu, MenuPosition
 from app.utils.enums import UpdateMethod
 
 
