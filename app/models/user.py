@@ -1,6 +1,7 @@
 from sqlalchemy import Column, DateTime, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
+from app.db import Base
 
 
 class User(Base):

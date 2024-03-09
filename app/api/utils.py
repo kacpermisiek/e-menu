@@ -9,7 +9,7 @@ from app.utils.enums import UpdateMethod
 
 def update_table(
     db: Session,
-    row_identifier: uuid.UUID,
+    row_identifier: int,
     update_model: BaseModel,
     schema: Base,
     return_schema: Base,

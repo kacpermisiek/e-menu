@@ -8,7 +8,7 @@ from app.utils.vars import MAX_INT_64
 
 
 class MenuPositionSchema(BaseModel):
-    id: UUID
+    id: int
     name: str = Field(..., min_length=1, max_length=255)
     price: float = Field(..., gt=0, le=MAX_INT_64)
     description: str
@@ -48,7 +48,7 @@ class MenuPositionPatchSchema(BaseModel):
 
 
 class MenuPositionResponseSchema(BaseModel):
-    id: str
+    id: int
     name: str
     price: float
     description: str
@@ -60,7 +60,7 @@ class MenuPositionResponseSchema(BaseModel):
 
 
 class MenuSchema(BaseModel):
-    id: UUID
+    id: int
     name: str
     positions: list[MenuPositionSchema]
 
