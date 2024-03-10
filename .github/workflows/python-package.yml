@@ -1,0 +1,52 @@
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: menu
+          POSTGRES_USER: alice
+          POSTGRES_PASSWORD: "xyz"
+          POSTGRES_HOST: localhost
+          DB_HOST: localhost
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+    - name: Install dependencies
+      run: poetry install
+    - name: Lint with isort and black
+      run: |
+        poetry run isort .
+        poetry run black .
+    - name: Test with pytest
+      env:
+        DATABASE: "postgresql://alice:xyz@localhost:5432/menu"
+      run: |
+        pip install alembic psycopg2-binary
+        alembic upgrade head
+        poetry run pytest
