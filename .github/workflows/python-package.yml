@@ -21,6 +21,8 @@ jobs:
           POSTGRES_DB: menu
           POSTGRES_USER: alice
           POSTGRES_PASSWORD: "xyz"
+          POSTGRES_HOST: postgres
+          DB_HOST: postgres
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
