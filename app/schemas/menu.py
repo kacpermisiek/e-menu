@@ -2,9 +2,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
 from fastapi import Query
-from pydantic import field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from app.utils.vars import MAX_INT_64
 

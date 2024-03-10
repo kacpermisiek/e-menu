@@ -1,8 +1,8 @@
-import pytest
-from datetime import datetime
-
 import uuid
+from datetime import datetime
 from http import HTTPStatus
+
+import pytest
 
 from app.models.menu import Menu, MenuMenuPosition, MenuPosition
 from tests.menu.fixtures import hundred_menu_positions, hundred_menus
@@ -302,8 +302,8 @@ def test_get_menus_filtered_by_created_after_should_return_filtered_list(
     "params, expected_names",
     [
         ({"created_before": "2022-01-01T00:00:00"}, ["menu_0", "menu_1"]),
-        ({"created_after": "2022-01-01T00:00:00"}, ["menu_1", "menu_2"]),
-        ({"updated_before": "2022-01-01T00:00:00"}, ["menu_0", "menu_1"]),
+        ({"created_after": "2022-01-01"}, ["menu_1", "menu_2"]),
+        ({"updated_before": "2022-01-01"}, ["menu_0", "menu_1"]),
         ({"updated_after": "2022-01-01T00:00:00"}, ["menu_1", "menu_2"]),
         (
             {

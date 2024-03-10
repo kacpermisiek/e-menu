@@ -2,8 +2,8 @@ from http import HTTPStatus
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.api.utils import get_menu_and_position, menu_contains_position, update_table

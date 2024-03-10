@@ -1,6 +1,5 @@
-from datetime import datetime
-
 import uuid
+from datetime import datetime
 from typing import Any
 
 import pytest
