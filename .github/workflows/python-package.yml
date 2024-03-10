@@ -45,6 +45,6 @@ jobs:
       env:
         DATABASE: "postgresql://alice:xyz@${{ job.services.postgres.host }}:5432/menu"
       run: |
-        pip install alembic
+        pip install alembic psycopg2-binary
         alembic upgrade head
         poetry run pytest
