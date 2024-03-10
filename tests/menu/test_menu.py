@@ -23,6 +23,13 @@ def test_create_new_menu_should_return_created_message(test_client, json_basic_m
     assert res.status_code == HTTPStatus.CREATED, res.text
 
 
+def test_create_menu_should_return_bad_request_when_name_is_already_taken(
+    test_client, with_menu
+):
+    res = test_client.post("/api/admin/menu", json={"name": with_menu.name})
+    assert res.status_code == HTTPStatus.BAD_REQUEST, res.text
+
+
 def test_create_new_menu_should_create_new_record_in_db(
     test_client, db_api, json_basic_menu
 ):
@@ -30,6 +37,11 @@ def test_create_new_menu_should_create_new_record_in_db(
 
     menu = db_api.get(Menu, res.json()["id"])
     assert menu is not None
+
+
+def test_create_new_menu_positions_with_menu(test_client, with_menu):
+    res = test_client.post("/api/admin/menu", json={"name": "new_menu"})
+    assert res.status_code == HTTPStatus.CREATED, res.text
 
 
 def test_get_menu_should_return_list_of_enums(test_client, hundred_menus):

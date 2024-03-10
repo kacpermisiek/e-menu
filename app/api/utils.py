@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import HTTPException
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import Base
@@ -53,3 +54,13 @@ def get_menu_and_position(db, menu_id, menu_position_id):
     if menu_position is None:
         raise HTTPException(status_code=404, detail="Menu position not found")
     return menu, menu_position
+
+
+def add_row_to_table(db: Session, row: Base) -> Base:
+    try:
+        db.add(row)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Object already exists")
+    return row

@@ -3,19 +3,27 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.api.utils import get_menu_and_position, menu_contains_position, update_table
+from app.api.utils import (
+    add_row_to_table,
+    get_menu_and_position,
+    menu_contains_position,
+    update_table,
+)
 from app.models.menu import Menu, MenuPosition
 from app.schemas.menu import (
     MenuCreateSchema,
+    MenuPatchSchema,
     MenuPositionCreateSchema,
     MenuPositionPatchSchema,
     MenuPositionSchema,
     MenuPositionUpdateSchema,
     MenuSchema,
     MenusQuerySchema,
+    MenuUpdateSchema,
 )
 from app.utils.enums import UpdateMethod
 
@@ -29,10 +37,27 @@ public = APIRouter()
 def create_menu_position(
     menu_position: MenuPositionCreateSchema, db: Session = Depends(get_db())
 ):
-    db_menu_position = MenuPosition(**menu_position.dict())
-    db.add(db_menu_position)
-    db.commit()
-    return db_menu_position
+
+    if menu_position.menus is not None:
+        menus = db.query(Menu).filter(Menu.id.in_(menu_position.menus)).all()
+    else:
+        menus = []
+
+    position = MenuPosition(
+        name=menu_position.name,
+        price=menu_position.price,
+        description=menu_position.description,
+        preparation_time=menu_position.preparation_time,
+        is_vegan=menu_position.is_vegan,
+        menus=menus,
+    )
+    try:
+        db.add(position)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Position already exists")
+    return position
 
 
 @admin.get("/menu_position", response_model=List[MenuPositionSchema])
@@ -55,10 +80,23 @@ def patch_menu_position(
     menu_position_update: MenuPositionPatchSchema,
     db: Session = Depends(get_db()),
 ):
+    if menu_position_update.menus is not None:
+        menus = db.query(Menu).filter(Menu.id.in_(menu_position_update.menus)).all()
+    else:
+        menus = None
+
+    model = MenuPositionPatchSchema(
+        name=menu_position_update.name,
+        price=menu_position_update.price,
+        description=menu_position_update.description,
+        preparation_time=menu_position_update.preparation_time,
+        is_vegan=menu_position_update.is_vegan,
+        menus=menus,
+    )
     return update_table(
         db=db,
         row_identifier=menu_position_id,
-        update_model=menu_position_update,
+        update_model=model,
         schema=MenuPosition,
         return_schema=MenuPositionSchema,
         method=UpdateMethod.PATCH,
@@ -71,10 +109,18 @@ def update_menu_position(
     menu_position_update: MenuPositionUpdateSchema,
     db: Session = Depends(get_db()),
 ):
+    model = MenuPositionUpdateSchema(
+        name=menu_position_update.name,
+        price=menu_position_update.price,
+        description=menu_position_update.description,
+        preparation_time=menu_position_update.preparation_time,
+        is_vegan=menu_position_update.is_vegan,
+        menus=db.query(Menu).filter(Menu.id.in_(menu_position_update.menus)).all(),
+    )
     return update_table(
         db=db,
         row_identifier=menu_position_id,
-        update_model=menu_position_update,
+        update_model=model,
         schema=MenuPosition,
         return_schema=MenuPositionSchema,
         method=UpdateMethod.PUT,
@@ -127,22 +173,31 @@ def get_menu(menu_id: int, db: Session = Depends(get_db())):
 
 @admin.post("/", response_model=MenuSchema, status_code=HTTPStatus.CREATED)
 def create_menu(menu: MenuCreateSchema, db: Session = Depends(get_db())):
-    db_menu = Menu(**menu.dict())
-    db.add(db_menu)
-    db.commit()
-    return db_menu
+    return add_row_to_table(db, Menu(**menu.dict()))
 
 
 @admin.patch("/{menu_id}", response_model=MenuSchema)
 def patch_menu(
     menu_id: int,
-    menu_update: MenuCreateSchema,
+    menu_update: MenuPatchSchema,
     db: Session = Depends(get_db()),
 ):
+    if menu_update.positions is not None:
+        positions = (
+            db.query(MenuPosition)
+            .filter(MenuPosition.id.in_(menu_update.positions))
+            .all()
+        )
+    else:
+        positions = None
+    model = MenuUpdateSchema(
+        name=menu_update.name,
+        positions=positions,
+    )
     return update_table(
         db=db,
         row_identifier=menu_id,
-        update_model=menu_update,
+        update_model=model,
         schema=Menu,
         return_schema=MenuSchema,
         method=UpdateMethod.PATCH,
@@ -152,13 +207,19 @@ def patch_menu(
 @admin.put("/{menu_id}", response_model=MenuSchema)
 def update_menu(
     menu_id: int,
-    menu_update: MenuCreateSchema,
+    menu_update: MenuUpdateSchema,
     db: Session = Depends(get_db()),
 ):
+    model = MenuPatchSchema(
+        name=menu_update.name,
+        positions=db.query(MenuPosition)
+        .filter(MenuPosition.id.in_(menu_update.positions))
+        .all(),
+    )
     return update_table(
         db=db,
         row_identifier=menu_id,
-        update_model=menu_update,
+        update_model=model,
         schema=Menu,
         return_schema=MenuSchema,
         method=UpdateMethod.PUT,
