@@ -10,5 +10,12 @@ class Settings(BaseSettings):
 
     database: SecretStr = SecretStr("postgresql://alice:xyz@localhost:5432/menu")
 
+    currency: str = "PLN"
+
+    smtp_enabled: bool = False
+    smtp_server: str = "smtp.gmail.com"
+    smtp_user: str = "user"
+    smtp_password: SecretStr = SecretStr("password")
+
 
 settings = Settings()

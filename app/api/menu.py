@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.api.utils import (
     add_row_to_table,
+    create_mail_pool_position,
     get_menu_and_position,
     menu_contains_position,
     update_table,
@@ -57,6 +58,12 @@ def create_menu_position(
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="Position already exists")
+
+    create_mail_pool_position(
+        db,
+        position.id,
+        updated=False,
+    )
     return position
 
 
@@ -93,6 +100,13 @@ def patch_menu_position(
         is_vegan=menu_position_update.is_vegan,
         menus=menus,
     )
+
+    create_mail_pool_position(
+        db,
+        menu_position_id,
+        updated=False,
+    )
+
     return update_table(
         db=db,
         row_identifier=menu_position_id,
@@ -117,6 +131,13 @@ def update_menu_position(
         is_vegan=menu_position_update.is_vegan,
         menus=db.query(Menu).filter(Menu.id.in_(menu_position_update.menus)).all(),
     )
+
+    create_mail_pool_position(
+        db,
+        menu_position_id,
+        updated=False,
+    )
+
     return update_table(
         db=db,
         row_identifier=menu_position_id,
@@ -138,6 +159,7 @@ def delete_menu_position(menu_position_id: int, db: Session = Depends(get_db()))
 
     db.delete(menu_position)
     db.commit()
+
     return menu_position
 
 
