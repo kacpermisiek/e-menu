@@ -64,7 +64,9 @@ def add_row_to_table(db: Session, row: Base) -> Base:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Object already exists")
+        raise HTTPException(
+            status_code=400, detail="Object already exists or other error occurred"
+        )
     return row
 
 
@@ -75,8 +77,5 @@ def create_mail_pool_position(db: Session, position_id: int, updated: bool) -> N
     try:
         db.add(mail_pool)
         db.commit()
-        print("\n\nMail pool position added\n\n")
     except IntegrityError as e:
-        print("\n\nMail pool position already exists\n\n")
-        print(str(e))
         db.rollback()

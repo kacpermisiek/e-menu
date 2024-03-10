@@ -22,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.create_table(
-        "user",
+        "users",
         sa.Column("id", UUID, primary_key=True, index=True, nullable=False),
         sa.Column("login", sa.String(255), nullable=False),
         sa.Column("password", sa.String(1024), nullable=False),

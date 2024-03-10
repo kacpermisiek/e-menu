@@ -195,7 +195,14 @@ def get_menu(menu_id: int, db: Session = Depends(get_db())):
 
 @admin.post("/", response_model=MenuSchema, status_code=HTTPStatus.CREATED)
 def create_menu(menu: MenuCreateSchema, db: Session = Depends(get_db())):
-    return add_row_to_table(db, Menu(**menu.dict()))
+    if menu.positions is not None:
+        positions = (
+            db.query(MenuPosition).filter(MenuPosition.id.in_(menu.positions)).all()
+        )
+    else:
+        positions = []
+
+    return add_row_to_table(db, Menu(name=menu.name, positions=positions))
 
 
 @admin.patch("/{menu_id}", response_model=MenuSchema)

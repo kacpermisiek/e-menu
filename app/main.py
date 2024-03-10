@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 
-from app.api import menu
+from app.api import menu, user
 from app.settings import settings
 from app.utils.logger import get_logger, setup_logger
 from app.utils.mail_utils import just_clear_mail_pool, send_mail
@@ -17,6 +17,7 @@ app = FastAPI(
 
 app.include_router(menu.public, prefix="/api/menu", tags=["Menu"])
 app.include_router(menu.admin, prefix="/api/admin/menu", tags=["Menu"])
+app.include_router(user.admin, prefix="/api/admin/user", tags=["User"])
 
 
 async def send_daily_mail():
@@ -24,6 +25,7 @@ async def send_daily_mail():
         logger.info("Creating daily mail")
         send_mail()
     else:
+        logger.info("SMTP is disabled, clearing mail pool")
         just_clear_mail_pool()
 
 

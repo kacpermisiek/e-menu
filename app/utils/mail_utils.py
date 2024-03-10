@@ -5,26 +5,32 @@ from email.mime.text import MIMEText
 
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.db import get_session_constructor
 from app.models.mail_pool import MailPool
 from app.models.user import User
 from app.settings import settings
+from app.utils.logger import get_logger
+
+logger = get_logger("mail_utils")
 
 
 def send_mail() -> None:
-    db = get_db()
-    message, created, updated = create_message(db)
-    if message:
-        users = db.query(User).all()
-        with smtplib.SMTP(settings.smtp_server, settings.smtp_port) as server:
-            server.login(settings.user, settings.smtp_password)
-            for user in users:
-                message["To"] = user.email
-                server.sendmail(settings.mail_from, user.email, message.as_string())
+    session_maker = get_session_constructor(settings.database)
+    with session_maker() as db:
+        message, created, updated = create_message(db)
+        if message:
+            users = db.query(User).all()
+            with smtplib.SMTP(settings.smtp_server, settings.smtp_port) as server:
+                server.login(settings.user, settings.smtp_password)
+                for user in users:
+                    message["To"] = user.email
+                    server.sendmail(settings.mail_from, user.email, message.as_string())
+        else:
+            logger.info("No new or updated positions, no mail sent")
 
 
-async def create_message(db: Session):
-    created, updated = await get_created_and_updated_positions(db)
+def create_message(db: Session):
+    created, updated = get_created_and_updated_positions(db)
     if created or updated:
         message = MIMEMultipart()
         message["From"] = settings.mail_from
@@ -54,7 +60,7 @@ def prepare_mail_body(creted, updated) -> str:
     )
 
 
-async def get_created_and_updated_positions(
+def get_created_and_updated_positions(
     db: Session,
 ) -> tuple[list[MailPool], list[MailPool]]:
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
@@ -69,9 +75,11 @@ async def get_created_and_updated_positions(
     return created, updated
 
 
-def just_clear_mail_pool(db: Session) -> None:
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    today_pool = db.query(MailPool).filter(MailPool.date == yesterday)
-    for position in today_pool:
-        db.delete(position)
-    db.commit()
+def just_clear_mail_pool() -> None:
+    session_maker = get_session_constructor(settings.database)
+    with session_maker() as db:
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        today_pool = db.query(MailPool).filter(MailPool.date == yesterday)
+        for position in today_pool:
+            db.delete(position)
+        db.commit()
