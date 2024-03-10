@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
 name: Python application
 
 on:
@@ -16,6 +13,18 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: menu
+          POSTGRES_USER: alice
+          POSTGRES_PASSWORD: "xyz"
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -33,5 +42,8 @@ jobs:
         poetry run isort .
         poetry run black .
     - name: Test with pytest
+      env:
+        DATABASE: "postgresql://alice:xyz@localhost:5432/menu"
       run: |
+        alembic upgrade head
         poetry run pytest
