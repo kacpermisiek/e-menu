@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 import pytest
 
-from app.models.menu import MenuPosition
+from app.models.menu import Menu, MenuPosition
 from app.utils.vars import MAX_INT_64
 from tests.menu.fixtures import hundred_menu_positions
 
@@ -27,6 +27,38 @@ def test_create_menu_position_should_add_position_to_database(
 
     menu_positions = db_api.query(MenuPosition).all()
     assert len(menu_positions) == 1
+
+
+def test_create_menu_position_with_the_same_name_should_raise_http_error(
+    db_api, test_client, with_menu_position
+):
+    data = {
+        "name": with_menu_position.name,
+        "price": 100,
+        "description": "Some description",
+        "preparation_time": 123,
+        "is_vegan": True,
+    }
+    res = test_client.post("api/admin/menu/menu_position", json=data)
+    assert res.status_code == HTTPStatus.BAD_REQUEST, res.text
+
+
+def test_create_menu_position_with_some_menu_should_add_position_to_database(
+    db_api, test_client, with_menu
+):
+    data = {
+        "name": "Some name",
+        "price": 100,
+        "description": "Some description",
+        "preparation_time": 123,
+        "is_vegan": True,
+        "menus": [with_menu.id],
+    }
+    res = test_client.post("api/admin/menu/menu_position", json=data)
+    assert res.status_code == HTTPStatus.CREATED, res.text
+    menu_position = db_api.query(MenuPosition).first()
+    assert len(menu_position.menus) == 1
+    assert menu_position.menus[0].id == with_menu.id
 
 
 def test_create_menu_position_should_add_position_with_proper_data(
@@ -159,21 +191,15 @@ def test_get_menu_position_with_wrong_format_of_id_should_raise_http_error(
     "name, new_value", [("name", "another_name"), ("price", 21.38)]
 )
 def test_patch_menu_position_should_return_proper_value_and_change_it_in_db(
-    db_api, test_client, name, new_value, json_basic_menu_position
+    db_api, test_client, name, new_value, with_menu_position
 ):
-    res = test_client.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
-    assert res.status_code == HTTPStatus.CREATED, res.text
-    position_id = res.json()["id"]
-
     res = test_client.patch(
-        f"api/admin/menu/menu_position/{position_id}", json={name: new_value}
+        f"api/admin/menu/menu_position/{with_menu_position.id}", json={name: new_value}
     )
     assert res.status_code == HTTPStatus.OK, res.text
     assert res.json()[name] == new_value
 
-    res = test_client.get(f"api/admin/menu/menu_position/{position_id}")
+    res = test_client.get(f"api/admin/menu/menu_position/{with_menu_position.id}")
     assert res.status_code == HTTPStatus.OK, res.text
     assert res.json()[name] == new_value
 
@@ -215,6 +241,29 @@ def test_patch_menu_position_without_data(
     assert res.status_code == HTTPStatus.OK, res.text
 
 
+def test_patch_menu_position_menus_should_update_info_in_menu(
+    db_api, test_client, with_menu_with_position
+):
+    position_id = with_menu_with_position.positions[0].id
+    data = {"menus": []}
+    test_client.patch(f"api/admin/menu/menu_position/{position_id}", json=data)
+
+    get_menu_resp = test_client.get(f"api/menu/{with_menu_with_position.id}")
+    assert len(get_menu_resp.json()["positions"]) == 0
+
+
+def test_patch_menu_position_menus_should_also_add_positions_in_menu(
+    db_api, test_client, with_menu, with_menu_position
+):
+    data = {"menus": [with_menu.id]}
+    test_client.patch(
+        f"api/admin/menu/menu_position/{with_menu_position.id}", json=data
+    )
+
+    get_menu_resp = test_client.get(f"api/menu/{with_menu.id}")
+    assert len(get_menu_resp.json()["positions"]) == 1
+
+
 def test_patch_menu_position_with_wrong_id_should_raise_http_error(
     test_client, json_basic_menu_position
 ):
@@ -239,6 +288,7 @@ def test_update_menu_position_should_return_value_and_change_it_in_db(
         "description": "another_description",
         "preparation_time": 20,
         "is_vegan": True,
+        "menus": [],
     }
 
     res = test_client.put(f"api/admin/menu/menu_position/{position_id}", json=data)
@@ -260,6 +310,7 @@ def test_update_menu_position_without_all_parameters_should_raise_http_error(
         "price": 21.38,
         "description": "another_description",
         "preparation_time": 20,
+        "menus": [],
     }
 
     res = test_client.put(f"api/admin/menu/menu_position/{position_id}", json=data)
@@ -271,9 +322,54 @@ def test_update_menu_position_with_wrong_id_should_raise_http_error(
     test_client, json_basic_menu_position
 ):
     res = test_client.put(
-        f"api/admin/menu/menu_position/235235234", json=json_basic_menu_position
+        f"api/admin/menu/menu_position/235235234",
+        json=json_basic_menu_position | {"menus": []},
     )
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
+
+
+def test_update_menu_position_should_update_info_in_menu(
+    db_api, test_client, with_menu_with_position
+):
+    position_id = with_menu_with_position.positions[0].id
+    data = {
+        "name": "another_name",
+        "price": 21.38,
+        "description": "another_description",
+        "preparation_time": 20,
+        "is_vegan": True,
+        "menus": [with_menu_with_position.id],
+    }
+    res = test_client.put(f"api/admin/menu/menu_position/{position_id}", json=data)
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    get_position_resp = test_client.get(f"api/admin/menu/menu_position/{position_id}")
+    assert get_position_resp.json()["name"] == "another_name"
+
+    get_menu_resp = test_client.get(f"api/menu/{with_menu_with_position.id}")
+    assert get_menu_resp.json()["positions"][0]["name"] == "another_name"
+
+
+def test_update_menu_position_menus_should_update_info_in_menu(
+    db_api, test_client, with_menu_with_position
+):
+    position_id = with_menu_with_position.positions[0].id
+    data = {
+        "name": "another_name",
+        "price": 21.38,
+        "description": "another_description",
+        "preparation_time": 20,
+        "is_vegan": True,
+        "menus": [],
+    }
+    res = test_client.put(f"api/admin/menu/menu_position/{position_id}", json=data)
+    assert res.status_code == HTTPStatus.OK, res.text
+
+    get_position_resp = test_client.get(f"api/admin/menu/menu_position/{position_id}")
+    assert get_position_resp.json()["name"] == "another_name"
+
+    get_menu_resp = test_client.get(f"api/menu/{with_menu_with_position.id}")
+    assert len(get_menu_resp.json()["positions"]) == 0
 
 
 def test_delete_menu_position_with_wrong_id_should_raise_http_error(
