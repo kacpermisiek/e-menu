@@ -43,7 +43,7 @@ jobs:
         poetry run black .
     - name: Test with pytest
       env:
-        DATABASE: "postgresql://alice:xyz@${{ job.services.postgres.host }}:5432/menu"
+        DATABASE: "postgresql://alice:xyz@postgres:5432/menu"
       run: |
         pip install alembic psycopg2-binary
         alembic upgrade head
