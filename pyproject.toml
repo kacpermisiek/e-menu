@@ -12,6 +12,7 @@ sqlalchemy = "^2.0.28"
 pydantic-settings = "^2.2.1"
 uvicorn = "^0.27.1"
 psycopg2 = "^2.9.9"
+structlog = "^24.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
