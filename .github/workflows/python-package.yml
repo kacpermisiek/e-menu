@@ -28,10 +28,10 @@ jobs:
         curl -sSL https://install.python-poetry.org | python3 -
     - name: Install dependencies
       run: poetry install
-    - name: Lint with isort and flake8
+    - name: Lint with isort and black
       run: |
         poetry run isort .
-        poetry run flake8 .
+        poetry run black .
     - name: Test with pytest
       run: |
         poetry run pytest
