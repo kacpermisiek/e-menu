@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import Base
+from app.models.mail_pool import MailPool
 from app.models.menu import Menu, MenuPosition
 from app.utils.enums import UpdateMethod
 
@@ -62,5 +64,18 @@ def add_row_to_table(db: Session, row: Base) -> Base:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=400, detail="Object already exists")
+        raise HTTPException(
+            status_code=400, detail="Object already exists or other error occurred"
+        )
     return row
+
+
+def create_mail_pool_position(db: Session, position_id: int, updated: bool) -> None:
+    mail_pool = MailPool(
+        position_id=position_id, date=datetime.date.today(), updated=updated
+    )
+    try:
+        db.add(mail_pool)
+        db.commit()
+    except IntegrityError as e:
+        db.rollback()

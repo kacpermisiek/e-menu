@@ -6,8 +6,8 @@ from app.db import Base
 
 
 class User(Base):
-    __tablename__ = "user"
-    __table_args__ = (UniqueConstraint("login", name="uq_menu_name"),)
+    __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("login", name="uq_login"),)
 
     id = Column(UUID, primary_key=True, index=True)
     login = Column(String(255), nullable=False)
