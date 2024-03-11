@@ -1,14 +1,45 @@
+version: "3.1"
+
 services:
   db:
-    image: postgres
+    image: postgres:15
     restart: always
     container_name: postgres
     user: postgres
     ports:
       - 5432:5432
+    expose:
+      - 5432
     environment:
         POSTGRES_PASSWORD: xyz
         POSTGRES_USER: alice
         POSTGRES_DB: menu
         PGPASSWORD: xyz
     command: ["postgres"]
+    volumes:
+      - e-menu-pg-data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  app:
+    restart: always
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    environment:
+      - smtp_enabled=${SMTP_ENABLED}
+      - smtp_port=${SMTP_PORT}
+      - smtp_user=${SMTP_USER}
+      - smtp_password=${SMTP_PASSWORD}
+      - DATABASE=postgresql://alice:xyz@db:5432/menu
+    depends_on:
+      - db
+    networks:
+      - backend
+
+volumes:
+  e-menu-pg-data:
+
+networks:
+  backend:
