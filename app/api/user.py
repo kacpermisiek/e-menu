@@ -13,7 +13,7 @@ from app.schemas.user import UserCreateSchema, UserSchema
 admin = APIRouter()
 
 
-@admin.post("/user", response_model=UserSchema, status_code=HTTPStatus.CREATED)
+@admin.post("/", response_model=UserSchema, status_code=HTTPStatus.CREATED)
 def create_user(
     user: UserCreateSchema,
     db: Session = Depends(get_db()),
@@ -29,6 +29,6 @@ def create_user(
     return add_row_to_table(db, User(**user.dict() | {"id": uuid.uuid4()}))
 
 
-@admin.get("/user", response_model=list[UserSchema])
+@admin.get("/", response_model=list[UserSchema])
 def get_users(db: Session = Depends(get_db())):
     return db.query(User).all()

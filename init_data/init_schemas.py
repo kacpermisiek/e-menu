@@ -1,4 +1,21 @@
 from app.schemas.menu import MenuCreateSchema, MenuPositionCreateSchema
+from app.schemas.user import UserCreateSchema
+
+"""
+Paste here some emails for test of sending mails
+"""
+USERS = [
+    UserCreateSchema(
+        login="admin",
+        email="elo.cotam@wp.pl",
+        password="admin",
+    ),
+    UserCreateSchema(
+        login="user",
+        email="kacpermisiek1@gmail.com",
+        password="user",
+    ),
+]
 
 MENU_POSITIONS = [
     MenuPositionCreateSchema(

@@ -16,10 +16,13 @@ class Settings(BaseSettings):
 
     currency: str = "PLN"
 
+    email_sender_name: str = "eMenu"
+
     smtp_enabled: bool = False
     smtp_server: str = "smtp.gmail.com"
-    smtp_user: str = "user"
-    smtp_password: SecretStr = SecretStr("password")
+    smtp_port: int = 465
+    smtp_user: str = "smtp_user"
+    smtp_password: SecretStr = SecretStr("smtp_password")
 
 
 settings = Settings()
