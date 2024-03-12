@@ -22,19 +22,19 @@ With that, every menu position know which menus it belongs to and every menu kno
 Records are being automatically deleted when the menu or menu position is deleted.
 
 ### 5. mail_pool
-Sending emails require from us to search whole menu_positions table for the positions created yesterday, which can be a heavy operation.
+Sending emails require from us to search whole menu_positions table for the positions created yesterday, which can be a heavy operation in case there are many records in the table.
 Because of that, there is mail_pool table, which stores foreign keys to the menu_positions created or updated in the last time.
 When it comes to sending emails, we can just search for the records in the mail_pool table and send the emails to the users.
-At the end, we can delete the records from the mail_pool table (not those one that were created today: those one are being sent in the next day).
+At the end, we the records from the mail_pool table are being deleted (not those one that were created today: those one are being sent in the next day).
 
 
 ## Configuration:
 ### 1. Requirements:
 - Python 3.11 or higher
-- Poetry 1.6 or higher
+- Poetry 1.6 or higher (only for run init script or unit tests - it is not required for running the app)
 
 ### 2. Env variables
-Please check the .env variables, default values are available in app.settings.py
+Please check file called .env, especially the following variables:
 
 #### 2.1 Email configuration
 If you want to enable sending emails, please set the following variables:
@@ -45,16 +45,16 @@ If you want to enable sending emails, please set the following variables:
 
 ***And set variable SMTP_ENABLED to true***
 
-### 3. Installation
+### 3. Running the app
 ```bash
 docker compose up --build
 ```
 It will create two services: db (postgresql) and app (fastapi)
 
 ### 4. Example data
-You can use init_data.main.py script to create some example data in the database (before that make sure that app and database is running).  
+You can use init_data.main.py script to create some example data in the database (before that make sure that app and database is running - previous command :) ).  
 This script will generate some menu positions, menus, users and mail pool with menu positions generated / created today and yesterday.
-Please add your email to USERS variable in the init_data.init_schemas.py 
+Please add your email to USERS variable in the init_data.init_schemas.py if you want to receive mails (or create user by /admin/user endpoint).
 
 ### 4.1 Create venv
 ```bash
@@ -85,7 +85,9 @@ Public user is able to:
 - search for menus (it is possible to sort/filter menus by its properties)
 
 ### 2. Private endpoints:
-Private endpoints require authentication. You can use the following credentials:
+Private endpoints require authentication. 
+The simplest way to achieve that is to use init_data.main.py script to create a user. 
+Then you can use the following credentials:
 - login: admin
 - password: string
 
