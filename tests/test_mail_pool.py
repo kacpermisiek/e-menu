@@ -10,7 +10,7 @@ from app.models.menu import MenuPosition
 
 def when_user_create_new_menu_position(test_client, position_name: str = "test_menu"):
     res = test_client.post(
-        "/api/admin/menu/menu_position",
+        "/api/admin/menu_position",
         json={
             "name": position_name,
             "price": 10.0,
@@ -79,7 +79,7 @@ def when_user_edit_position(
     if body is None:
         body = {"name": "test_menu2"}
     res = test_client.patch(
-        f"/api/admin/menu/menu_position/{position_id}",
+        f"/api/admin/menu_position/{position_id}",
         json=body,
     )
     assert res.status_code == HTTPStatus.OK
@@ -128,7 +128,7 @@ def test_updated_menu_twice_in_other_dates_should_add_to_mail_pool_twice(
 def deleted_menu_position_should_be_also_deleted_from_mail_pool(db_api, test_client):
     position_id = when_user_create_new_menu_position(test_client)
 
-    test_client.delete(f"/api/admin/menu/menu_position/{position_id}")
+    test_client.delete(f"/api/admin/menu_position/{position_id}")
 
     then_position_at_pool_should_be_x_times(db_api, position_id, x=0)
 
@@ -139,7 +139,7 @@ def test_deleted_menu_position_should_be_also_deleted_if_was_updated_yesterday(
     position = when_position_with_old_creation_date(db_api)
     when_user_edit_position_yesterday(db_api, admin_cli, position.id)
 
-    admin_cli.delete(f"/api/admin/menu/menu_position/{position.id}")
+    admin_cli.delete(f"/api/admin/menu_position/{position.id}")
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=0)
 
@@ -151,7 +151,7 @@ def test_deleted_menu_positions_should_remove_all_of_mail_pool_records(
     when_user_edit_position_yesterday(db_api, admin_cli, position.id)
     when_user_edit_position(admin_cli, position.id, body={"name": "test_menu3"})
 
-    admin_cli.delete(f"/api/admin/menu/menu_position/{position.id}")
+    admin_cli.delete(f"/api/admin/menu_position/{position.id}")
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=0)
 

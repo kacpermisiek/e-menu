@@ -43,7 +43,7 @@ def create_object(endpoint: str, obj: BaseModel) -> None:
 
 def create_menu_positions() -> None:
     for position in MENU_POSITIONS:
-        create_object("/api/admin/menu/menu_position", position)
+        create_object("/api/admin/menu_position", position)
 
 
 def create_menus() -> None:
