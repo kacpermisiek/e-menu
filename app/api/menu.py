@@ -28,7 +28,9 @@ public = APIRouter()
 
 
 @public.get("/", response_model=List[MenuSchema])
-def get_menus(query: MenusQuerySchema = Depends(), db: Session = Depends(get_db())):
+async def get_menus(
+    query: MenusQuerySchema = Depends(), db: Session = Depends(get_db())
+):
     results = db.query(Menu).order_by(query.sortby)
     if query.name:
         results = results.filter(func.lower(Menu.name).like(f"%{query.name.lower()}%"))
@@ -49,7 +51,7 @@ def get_menus(query: MenusQuerySchema = Depends(), db: Session = Depends(get_db(
 
 
 @public.get("/{menu_id}", response_model=MenuSchema)
-def get_menu(menu_id: int, db: Session = Depends(get_db())):
+async def get_menu(menu_id: int, db: Session = Depends(get_db())):
     menu = db.get(Menu, menu_id)
     if menu is None:
         raise HTTPException(status_code=404, detail="Menu not found")
@@ -58,7 +60,7 @@ def get_menu(menu_id: int, db: Session = Depends(get_db())):
 
 
 @admin.post("/", response_model=MenuSchema, status_code=HTTPStatus.CREATED)
-def create_menu(menu: MenuCreateSchema, db: Session = Depends(get_db())):
+async def create_menu(menu: MenuCreateSchema, db: Session = Depends(get_db())):
     if menu.positions is not None:
         positions = (
             db.query(MenuPosition).filter(MenuPosition.id.in_(menu.positions)).all()
@@ -70,7 +72,7 @@ def create_menu(menu: MenuCreateSchema, db: Session = Depends(get_db())):
 
 
 @admin.patch("/{menu_id}", response_model=MenuSchema)
-def patch_menu(
+async def patch_menu(
     menu_id: int,
     menu_update: MenuPatchSchema,
     db: Session = Depends(get_db()),
@@ -98,7 +100,7 @@ def patch_menu(
 
 
 @admin.put("/{menu_id}", response_model=MenuSchema)
-def update_menu(
+async def update_menu(
     menu_id: int,
     menu_update: MenuUpdateSchema,
     db: Session = Depends(get_db()),
@@ -120,7 +122,7 @@ def update_menu(
 
 
 @admin.delete("/{menu_id}", response_model=MenuSchema)
-def delete_menu(menu_id: int, db: Session = Depends(get_db())):
+async def delete_menu(menu_id: int, db: Session = Depends(get_db())):
     menu = db.get(Menu, menu_id)
     if menu is None:
         raise HTTPException(status_code=404, detail="Menu not found")
@@ -131,7 +133,7 @@ def delete_menu(menu_id: int, db: Session = Depends(get_db())):
 
 
 @admin.post("/{menu_id}/add_position/{menu_position_id}", response_model=MenuSchema)
-def add_position_to_menu(
+async def add_position_to_menu(
     menu_id: int,
     menu_position_id: int,
     db: Session = Depends(get_db()),
@@ -149,7 +151,7 @@ def add_position_to_menu(
 
 
 @admin.post("/{menu_id}/remove_position/{menu_position_id}", response_model=MenuSchema)
-def remove_position_from_menu(
+async def remove_position_from_menu(
     menu_id: int,
     menu_position_id: int,
     db: Session = Depends(get_db()),
