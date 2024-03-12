@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.api import menu, menu_position, user
-from app.api.deps import get_db, get_encryption_key
+from app.api.deps import get_db
 from app.api.utils import authenticate_user, create_access_token
 from app.schemas.other import Token
 from app.settings import settings
@@ -39,7 +39,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db()),
-    encryption_key: bytes = Depends(get_encryption_key),
 ):
     user = authenticate_user(db, pwd_context, form_data.username, form_data.password)
     if not user:

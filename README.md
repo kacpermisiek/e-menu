@@ -113,3 +113,5 @@ Coverage is about 86%.
 
 ## Future improvements:
 * Add images for the menu positions: Use S3 to store images and add image_url column for menu_positions table.
+* Add more tests: Add integration tests, e2e tests, tests for the email sending.
+* Response pagination: especially for the GET /menu endpoint.

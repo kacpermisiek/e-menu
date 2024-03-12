@@ -16,9 +16,3 @@ def get_db():
             db.close()
 
     return inner
-
-
-def get_encryption_key():
-    return base64.urlsafe_b64encode(
-        bytes.fromhex(settings.encryption_key.get_secret_value())
-    )

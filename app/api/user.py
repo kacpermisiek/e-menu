@@ -15,7 +15,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @admin.post("/", response_model=UserSchema, status_code=HTTPStatus.CREATED)
-def create_user(
+async def create_user(
     user: UserCreateSchema,
     db: Session = Depends(get_db()),
 ):
@@ -24,5 +24,5 @@ def create_user(
 
 
 @admin.get("/", response_model=list[UserSchema])
-def get_users(db: Session = Depends(get_db())):
+async def get_users(db: Session = Depends(get_db())):
     return db.query(User).all()
