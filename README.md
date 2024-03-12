@@ -8,8 +8,7 @@ App is written in FastAPI and uses PostgreSQL as a database.
 ## Database
 Database have tables such as:
 ### 1. users
-This table is very primitive, it is created just to simulate extracting user emails.
-It stores user's email, login and password, which is encrypted by Fernet.
+It stores user's email, login and password, which are encrypted. It is being used for authentication, also for sending emails.
 
 ### 2. menu_positions
 This table stores menu positions, which can be a single dishes in the menu. It stores the name, description, price and the creation / updates dates.
@@ -87,7 +86,8 @@ Public user is able to:
 
 ### 2. Private endpoints:
 Private endpoints require authentication. You can use the following credentials:
-# TODO: Authentication
+- login: admin
+- password: string
 
 Authenticated user is able to:
 - create, remove, update and delete menu positions

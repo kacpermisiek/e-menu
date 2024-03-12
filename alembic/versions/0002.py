@@ -25,7 +25,7 @@ def upgrade() -> None:
         "users",
         sa.Column("id", UUID, primary_key=True, index=True, nullable=False),
         sa.Column("login", sa.String(255), nullable=False),
-        sa.Column("password", sa.String(1024), nullable=False),
+        sa.Column("password", sa.Text(), nullable=False),
         sa.Column("email", sa.String(255), nullable=False),
         sa.Column("created_at", sa.DateTime, nullable=False),
         sa.Column("updated_at", sa.DateTime, nullable=False),
@@ -34,4 +34,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("user")
+    op.drop_table("users")

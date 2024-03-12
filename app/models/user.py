@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, String, UniqueConstraint
+from sqlalchemy import Column, DateTime, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
@@ -11,7 +11,7 @@ class User(Base):
 
     id = Column(UUID, primary_key=True, index=True)
     login = Column(String(255), nullable=False)
-    password = Column(String(1024), nullable=False)
+    password = Column(Text(), nullable=False)
     email = Column(String(255), nullable=False)
 
     created_at = Column(DateTime, default=func.now())

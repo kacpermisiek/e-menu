@@ -7,9 +7,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.api.utils import create_access_token
 from app.db import Base
 from app.main import app
 from app.models.menu import Menu, MenuPosition
+from app.models.user import User
 from app.settings import settings
 
 
@@ -17,12 +19,17 @@ from app.settings import settings
 def db_init(engine):
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session().add(User(id=uuid.uuid4(), login="test", password="test"))
 
 
 @pytest.fixture
-def test_client():
-    client = TestClient(app)
-    return client
+def admin_cli():
+    token = create_access_token(
+        data={"sub": "test"},
+    )
+    with TestClient(app, headers={"Authorization": f"Bearer {token}"}) as client:
+        yield client
 
 
 @pytest.fixture(scope="module")

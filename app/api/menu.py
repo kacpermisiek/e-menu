@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -28,7 +29,7 @@ from app.schemas.menu import (
 )
 from app.utils.enums import UpdateMethod
 
-admin = APIRouter()
+admin = APIRouter(dependencies=[Depends(OAuth2PasswordBearer(tokenUrl="token"))])
 public = APIRouter()
 
 
