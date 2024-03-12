@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from app.api import menu, user
+from app.api import menu, menu_position, user
 from app.api.deps import get_db, get_encryption_key
 from app.api.utils import authenticate_user, create_access_token
 from app.schemas.other import Token
@@ -25,6 +25,9 @@ app = FastAPI(
 
 app.include_router(menu.public, prefix="/api/menu", tags=["Menu"])
 app.include_router(menu.admin, prefix="/api/admin/menu", tags=["Menu"])
+app.include_router(
+    menu_position.admin, prefix="/api/admin/menu_position", tags=["Menu Position"]
+)
 app.include_router(user.admin, prefix="/api/admin/user", tags=["User"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -32,7 +35,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@app.post("/token")
+@app.post("/token", include_in_schema=False)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db()),

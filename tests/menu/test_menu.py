@@ -241,7 +241,7 @@ def test_remove_position_from_menu_should_not_remove_position_from_db(
     position = db_api.get(MenuPosition, position_id)
     assert position is not None
 
-    res = admin_cli.get(f"/api/admin/menu/menu_position/{position_id}")
+    res = admin_cli.get(f"/api/admin/menu_position/{position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
     assert res.json()["id"] == position_id
 
@@ -255,7 +255,7 @@ def test_remove_position_from_db_should_remove_it_from_menu(
     menu = db_api.get(Menu, menu_id)
     assert len(menu.positions) == 1
 
-    res = admin_cli.delete(f"/api/admin/menu/menu_position/{position_id}")
+    res = admin_cli.delete(f"/api/admin/menu_position/{position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
     res = admin_cli.get(f"/api/menu/{menu_id}")
