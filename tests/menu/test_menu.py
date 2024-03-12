@@ -24,14 +24,14 @@ def test_create_new_menu_should_return_created_message(admin_cli, json_basic_men
 
 
 def test_create_menu_should_return_bad_request_when_name_is_already_taken(
-        admin_cli, with_menu
+    admin_cli, with_menu
 ):
     res = admin_cli.post("/api/admin/menu", json={"name": with_menu.name})
     assert res.status_code == HTTPStatus.BAD_REQUEST, res.text
 
 
 def test_create_new_menu_should_create_new_record_in_db(
-        admin_cli, db_api, json_basic_menu
+    admin_cli, db_api, json_basic_menu
 ):
     res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
 
@@ -114,7 +114,7 @@ def test_delete_menu_with_wrong_id_should_return_not_found(admin_cli):
 
 
 def test_add_menu_position_to_menu_should_return_ok_message(
-        admin_cli, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
     menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
@@ -125,7 +125,7 @@ def test_add_menu_position_to_menu_should_return_ok_message(
 
 
 def test_add_menu_position_to_menu_should_add_it_in_db(
-        admin_cli, db_api, with_menu_position, json_basic_menu
+    admin_cli, db_api, with_menu_position, json_basic_menu
 ):
     menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
@@ -144,7 +144,7 @@ def test_add_menu_position_to_menu_should_add_it_in_db(
 
 
 def test_add_the_same_menu_position_to_menu_should_return_bad_request(
-        admin_cli, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
     menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
@@ -156,7 +156,7 @@ def test_add_the_same_menu_position_to_menu_should_return_bad_request(
 
 
 def test_add_not_existing_menu_position_to_menu_should_return_not_found(
-        admin_cli, json_basic_menu
+    admin_cli, json_basic_menu
 ):
     menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
@@ -165,14 +165,14 @@ def test_add_not_existing_menu_position_to_menu_should_return_not_found(
 
 
 def test_add_menu_position_to_not_existing_menu_should_return_not_found(
-        admin_cli, with_menu_position
+    admin_cli, with_menu_position
 ):
     res = admin_cli.post(f"/api/admin/menu/123/add_position/{with_menu_position.id}")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
 def test_get_menu_positions_should_return_list_of_menu_positions(
-        admin_cli, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
     menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
@@ -201,14 +201,10 @@ def test_add_menu_position_to_two_different_menus_should_return_ok_message_and_c
 
     menu_position_id = 1
 
-    res = admin_cli.post(
-        f"/api/admin/menu/{menu_id_1}/add_position/{menu_position_id}"
-    )
+    res = admin_cli.post(f"/api/admin/menu/{menu_id_1}/add_position/{menu_position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
-    res = admin_cli.post(
-        f"/api/admin/menu/{menu_id_2}/add_position/{menu_position_id}"
-    )
+    res = admin_cli.post(f"/api/admin/menu/{menu_id_2}/add_position/{menu_position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
     menu_1 = db_api.get(Menu, menu_id_1)
@@ -226,7 +222,7 @@ def test_add_menu_position_to_two_different_menus_should_return_ok_message_and_c
 
 
 def test_remove_position_from_menu_should_return_ok_message(
-        admin_cli, with_menu_with_position
+    admin_cli, with_menu_with_position
 ):
     menu_id = with_menu_with_position.id
     position_id = with_menu_with_position.positions[0].id
@@ -251,7 +247,7 @@ def test_remove_position_from_menu_should_not_remove_position_from_db(
 
 
 def test_remove_position_from_db_should_remove_it_from_menu(
-        admin_cli, db_api, with_menu_with_position
+    admin_cli, db_api, with_menu_with_position
 ):
     menu_id = with_menu_with_position.id
     position_id = with_menu_with_position.positions[0].id
@@ -299,7 +295,7 @@ def test_get_menus_filtered_by_name_should_return_filtered_list(admin_cli, db_ap
 
 
 def test_get_menus_filtered_by_created_after_should_return_filtered_list(
-        admin_cli, db_api, with_menus_with_different_dates
+    admin_cli, db_api, with_menus_with_different_dates
 ):
     res = admin_cli.get("/api/menu", params={"created_after": "2022-01-01T00:00:00"})
     assert res.status_code == HTTPStatus.OK, res.text
@@ -343,7 +339,7 @@ def test_get_menus_filtered_by_created_after_should_return_filtered_list(
     ],
 )
 def test_get_filtered_menus_should_return_filtered_list(
-        admin_cli, db_api, with_menus_with_different_dates, params, expected_names
+    admin_cli, db_api, with_menus_with_different_dates, params, expected_names
 ):
     res = admin_cli.get("/api/menu", params=params)
     assert res.status_code == HTTPStatus.OK, res.text

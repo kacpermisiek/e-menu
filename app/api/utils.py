@@ -1,9 +1,7 @@
 import datetime
-from typing import Optional
 
-from cryptography.fernet import Fernet
 from fastapi import HTTPException
-from jose import JWTError, jwt
+from jose import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
@@ -82,7 +80,7 @@ def create_mail_pool_position(db: Session, position_id: int, updated: bool) -> N
     try:
         db.add(mail_pool)
         db.commit()
-    except IntegrityError as e:
+    except IntegrityError:
         db.rollback()
 
 

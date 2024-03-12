@@ -9,11 +9,9 @@ from tests.menu.fixtures import hundred_menu_positions
 
 
 def test_create_menu_position_should_return_created_message(
-        admin_cli, json_basic_menu_position
+    admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
 
@@ -122,12 +120,10 @@ def test_create_many_menu_positions_should_add_positions_to_database(
     ],
 )
 def test_create_menu_position_with_wrong_parameter_format_should_raise_http_error(
-        admin_cli, json_basic_menu_position, name, value
+    admin_cli, json_basic_menu_position, name, value
 ):
     json_basic_menu_position[name] = value
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, res.text
 
 
@@ -150,7 +146,7 @@ def test_get_zero_menu_positions_should_return_empty_list(db_api, admin_cli):
 
 
 def test_get_not_existing_menu_position_should_return_http_error(
-        admin_cli,
+    admin_cli,
 ):
     res = admin_cli.get(f"api/admin/menu/menu_position/6661")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
@@ -181,7 +177,7 @@ def test_get_existing_menu_position_should_return_proper_position(
     ["test", "test-test", "test_test", "deadbeefdeadbeefdeadbeefdead"],
 )
 def test_get_menu_position_with_wrong_format_of_id_should_raise_http_error(
-        admin_cli, menu_position_id
+    admin_cli, menu_position_id
 ):
     res = admin_cli.get(f"api/admin/menu/menu_position/{menu_position_id}")
     assert res.status_code == HTTPStatus.UNPROCESSABLE_ENTITY, res.text
@@ -207,9 +203,7 @@ def test_patch_menu_position_should_return_proper_value_and_change_it_in_db(
 def test_patch_menu_should_change_updated_at_parameter(
     db_api, admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
@@ -228,12 +222,8 @@ def test_patch_menu_should_change_updated_at_parameter(
     assert res.json()["updated_at"] > updated_at
 
 
-def test_patch_menu_position_without_data(
-    db_api, admin_cli, json_basic_menu_position
-):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+def test_patch_menu_position_without_data(db_api, admin_cli, json_basic_menu_position):
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
@@ -256,16 +246,14 @@ def test_patch_menu_position_menus_should_also_add_positions_in_menu(
     db_api, admin_cli, with_menu, with_menu_position
 ):
     data = {"menus": [with_menu.id]}
-    admin_cli.patch(
-        f"api/admin/menu/menu_position/{with_menu_position.id}", json=data
-    )
+    admin_cli.patch(f"api/admin/menu/menu_position/{with_menu_position.id}", json=data)
 
     get_menu_resp = admin_cli.get(f"api/menu/{with_menu.id}")
     assert len(get_menu_resp.json()["positions"]) == 1
 
 
 def test_patch_menu_position_with_wrong_id_should_raise_http_error(
-        admin_cli, json_basic_menu_position
+    admin_cli, json_basic_menu_position
 ):
     res = admin_cli.patch(
         f"api/admin/menu/menu_position/123", json=json_basic_menu_position
@@ -276,9 +264,7 @@ def test_patch_menu_position_with_wrong_id_should_raise_http_error(
 def test_update_menu_position_should_return_value_and_change_it_in_db(
     db_api, admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
@@ -299,9 +285,7 @@ def test_update_menu_position_should_return_value_and_change_it_in_db(
 def test_update_menu_position_without_all_parameters_should_raise_http_error(
     db_api, admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
@@ -319,7 +303,7 @@ def test_update_menu_position_without_all_parameters_should_raise_http_error(
 
 
 def test_update_menu_position_with_wrong_id_should_raise_http_error(
-        admin_cli, json_basic_menu_position
+    admin_cli, json_basic_menu_position
 ):
     res = admin_cli.put(
         f"api/admin/menu/menu_position/235235234",
@@ -373,7 +357,7 @@ def test_update_menu_position_menus_should_update_info_in_menu(
 
 
 def test_delete_menu_position_with_wrong_id_should_raise_http_error(
-        admin_cli,
+    admin_cli,
 ):
     res = admin_cli.delete(f"api/admin/menu/menu_position/12314523423423423")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
@@ -382,9 +366,7 @@ def test_delete_menu_position_with_wrong_id_should_raise_http_error(
 def test_delete_menu_position_should_return_menu_position_parameters(
     db_api, admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
@@ -408,9 +390,7 @@ def test_delete_menu_position_should_return_menu_position_parameters(
 def test_delete_menu_position_should_remove_position_from_db(
     db_api, admin_cli, json_basic_menu_position
 ):
-    res = admin_cli.post(
-        "api/admin/menu/menu_position", json=json_basic_menu_position
-    )
+    res = admin_cli.post("api/admin/menu/menu_position", json=json_basic_menu_position)
     assert res.status_code == HTTPStatus.CREATED, res.text
     position_id = res.json()["id"]
 
