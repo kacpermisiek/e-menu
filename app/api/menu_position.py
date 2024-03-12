@@ -21,7 +21,7 @@ admin = APIRouter(dependencies=[Depends(OAuth2PasswordBearer(tokenUrl="token"))]
 
 
 @admin.post("/", response_model=MenuPositionSchema, status_code=HTTPStatus.CREATED)
-def create_menu_position(
+async def create_menu_position(
     menu_position: MenuPositionCreateSchema, db: Session = Depends(get_db())
 ):
 
@@ -54,12 +54,12 @@ def create_menu_position(
 
 
 @admin.get("/", response_model=List[MenuPositionSchema])
-def get_menu_positions(db: Session = Depends(get_db())):
+async def get_menu_positions(db: Session = Depends(get_db())):
     return db.query(MenuPosition).all()
 
 
 @admin.get("/{menu_position_id}", response_model=MenuPositionSchema)
-def get_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
+async def get_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
     menu_position = db.get(MenuPosition, menu_position_id)
     if menu_position is None:
         raise HTTPException(status_code=404, detail="Menu position not found")
@@ -68,7 +68,7 @@ def get_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
 
 
 @admin.patch("/{menu_position_id}", response_model=MenuPositionSchema)
-def patch_menu_position(
+async def patch_menu_position(
     menu_position_id: int,
     menu_position_update: MenuPositionPatchSchema,
     db: Session = Depends(get_db()),
@@ -104,7 +104,7 @@ def patch_menu_position(
 
 
 @admin.put("/{menu_position_id}", response_model=MenuPositionSchema)
-def update_menu_position(
+async def update_menu_position(
     menu_position_id: int,
     menu_position_update: MenuPositionUpdateSchema,
     db: Session = Depends(get_db()),
@@ -135,7 +135,7 @@ def update_menu_position(
 
 
 @admin.delete("/{menu_position_id}", response_model=MenuPositionSchema)
-def delete_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
+async def delete_menu_position(menu_position_id: int, db: Session = Depends(get_db())):
     menu_position = db.get(MenuPosition, menu_position_id)
     if menu_position is None:
         raise HTTPException(status_code=404, detail="Menu position not found")
