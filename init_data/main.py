@@ -18,12 +18,25 @@ setup_logger(LoggingLevel.DEBUG)
 logger = get_logger("main")
 
 
+def generate_token() -> str:
+    r = requests.post(
+        "http://localhost:8000/token", data={"username": "admin", "password": "string"}
+    )
+    return r.json()["access_token"]
+
+
+def get_headers() -> dict[str, str]:
+    return {"Authorization": f"Bearer {generate_token()}"}
+
+
 class InitDataSettings(Settings):
     change_pool_dates: bool = True
 
 
 def create_object(endpoint: str, obj: BaseModel) -> None:
-    r = requests.post(f"http://localhost:8000{endpoint}", json=obj.dict())
+    r = requests.post(
+        f"http://localhost:8000{endpoint}", json=obj.dict(), headers=get_headers()
+    )
     if r.status_code not in [HTTPStatus.CREATED, HTTPStatus.BAD_REQUEST]:
         logger.error(r.json())
 
@@ -38,15 +51,16 @@ def create_menus() -> None:
         create_object("/api/admin/menu", menu)
 
 
-def create_users() -> None:
+def create_users(db: Session) -> None:
     for user in USERS:
-        create_object("/api/admin/user", user)
+        db.add(user)
+    db.commit()
 
 
-def create_dummy_data() -> None:
+def create_dummy_data(db: Session) -> None:
+    create_users(db)
     create_menu_positions()
     create_menus()
-    create_users()
 
 
 def change_few_pool_dates_to_yesterday(db: Session) -> None:
@@ -74,6 +88,6 @@ if __name__ == "__main__":
     session_maker = get_session_constructor(settings.database)
     with session_maker() as db:
         clear_tables(settings.database.get_secret_value(), db)
-        create_dummy_data()
+        create_dummy_data(db)
         if settings.change_pool_dates:
             change_few_pool_dates_to_yesterday(db)

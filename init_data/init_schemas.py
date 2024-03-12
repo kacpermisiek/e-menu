@@ -1,3 +1,6 @@
+import uuid
+
+from app.models.user import User
 from app.schemas.menu import MenuCreateSchema, MenuPositionCreateSchema
 from app.schemas.user import UserCreateSchema
 
@@ -5,15 +8,17 @@ from app.schemas.user import UserCreateSchema
 Paste here some emails for test of sending mails
 """
 USERS = [
-    UserCreateSchema(
+    User(
+        id=uuid.uuid4(),
         login="admin",
         email="elo.cotam@wp.pl",
-        password="admin",
+        password="$2b$12$aPFS/hcPqYrzgi6y0jW87eFW1PeIej16O.qc8k9/CaoLt3nhD3ACW",
     ),
-    UserCreateSchema(
+    User(
+        id=uuid.uuid4(),
         login="user",
         email="kacpermisiek1@gmail.com",
-        password="user",
+        password="$2b$12$aPFS/hcPqYrzgi6y0jW87eFW1PeIej16O.qc8k9/CaoLt3nhD3ACW",
     ),
 ]
 

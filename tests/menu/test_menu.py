@@ -8,128 +8,128 @@ from app.models.menu import Menu, MenuMenuPosition, MenuPosition
 from tests.menu.fixtures import hundred_menu_positions, hundred_menus
 
 
-def test_get_menu_should_return_ok_message(test_client):
-    res = test_client.get("/api/menu")
+def test_get_menu_should_return_ok_message(admin_cli):
+    res = admin_cli.get("/api/menu")
     assert res.status_code == HTTPStatus.OK, res.text
 
 
-def test_get_menu_should_return_empty_list_when_there_is_no_menus(test_client):
-    res = test_client.get("/api/menu")
+def test_get_menu_should_return_empty_list_when_there_is_no_menus(admin_cli):
+    res = admin_cli.get("/api/menu")
     assert res.json() == []
 
 
-def test_create_new_menu_should_return_created_message(test_client, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_create_new_menu_should_return_created_message(admin_cli, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
 
 def test_create_menu_should_return_bad_request_when_name_is_already_taken(
-    test_client, with_menu
+    admin_cli, with_menu
 ):
-    res = test_client.post("/api/admin/menu", json={"name": with_menu.name})
+    res = admin_cli.post("/api/admin/menu", json={"name": with_menu.name})
     assert res.status_code == HTTPStatus.BAD_REQUEST, res.text
 
 
 def test_create_new_menu_should_create_new_record_in_db(
-    test_client, db_api, json_basic_menu
+    admin_cli, db_api, json_basic_menu
 ):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
 
     menu = db_api.get(Menu, res.json()["id"])
     assert menu is not None
 
 
-def test_create_new_menu_positions_with_menu(test_client, with_menu):
-    res = test_client.post("/api/admin/menu", json={"name": "new_menu"})
+def test_create_new_menu_positions_with_menu(admin_cli, with_menu):
+    res = admin_cli.post("/api/admin/menu", json={"name": "new_menu"})
     assert res.status_code == HTTPStatus.CREATED, res.text
 
 
-def test_get_menu_should_return_list_of_enums(test_client, hundred_menus):
-    res = test_client.get("/api/menu")
+def test_get_menu_should_return_list_of_enums(admin_cli, hundred_menus):
+    res = admin_cli.get("/api/menu")
     assert len(res.json()) == 100
 
 
-def test_get_not_existing_menu_should_return_not_found(test_client):
-    res = test_client.get(f"/api/menu/123")
+def test_get_not_existing_menu_should_return_not_found(admin_cli):
+    res = admin_cli.get(f"/api/menu/123")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
-def test_get_menu_should_return_it_params(test_client, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_get_menu_should_return_it_params(admin_cli, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
     menu_id = res.json()["id"]
 
-    res = test_client.get(f"/api/menu/{menu_id}")
+    res = admin_cli.get(f"/api/menu/{menu_id}")
     assert res.status_code == HTTPStatus.OK, res.text
     assert res.json()["name"] == json_basic_menu["name"]
 
 
-def test_patch_menu_should_return_ok_message(test_client, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_patch_menu_should_return_ok_message(admin_cli, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
     menu_id = res.json()["id"]
 
-    res = test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
+    res = admin_cli.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
     assert res.status_code == HTTPStatus.OK, res.text
 
 
-def test_patch_menu_should_update_record_in_db(test_client, db_api, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_patch_menu_should_update_record_in_db(admin_cli, db_api, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     menu_id = res.json()["id"]
 
-    test_client.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
+    admin_cli.patch(f"/api/admin/menu/{menu_id}", json={"name": "new_name"})
 
     menu = db_api.get(Menu, menu_id)
     assert menu.name == "new_name"
 
 
-def test_delete_menu_should_return_ok_message(test_client, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_delete_menu_should_return_ok_message(admin_cli, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
     menu_id = res.json()["id"]
 
-    res = test_client.delete(f"/api/admin/menu/{menu_id}")
+    res = admin_cli.delete(f"/api/admin/menu/{menu_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
 
-def test_delete_menu_should_delete_record_in_db(test_client, db_api, json_basic_menu):
-    res = test_client.post("/api/admin/menu", json=json_basic_menu)
+def test_delete_menu_should_delete_record_in_db(admin_cli, db_api, json_basic_menu):
+    res = admin_cli.post("/api/admin/menu", json=json_basic_menu)
     assert res.status_code == HTTPStatus.CREATED, res.text
 
     menu_id = res.json()["id"]
 
-    res = test_client.delete(f"/api/admin/menu/{menu_id}")
+    res = admin_cli.delete(f"/api/admin/menu/{menu_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
     menu = db_api.get(Menu, menu_id)
     assert menu is None
 
 
-def test_delete_menu_with_wrong_id_should_return_not_found(test_client):
-    res = test_client.delete(f"/api/admin/menu/123")
+def test_delete_menu_with_wrong_id_should_return_not_found(admin_cli):
+    res = admin_cli.delete(f"/api/admin/menu/123")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
 def test_add_menu_position_to_menu_should_return_ok_message(
-    test_client, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
-    menu_id = test_client.post("/api/admin/menu", json=json_basic_menu).json()["id"]
+    menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
-    res = test_client.post(
+    res = admin_cli.post(
         f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}"
     )
     assert res.status_code == HTTPStatus.OK, res.text
 
 
 def test_add_menu_position_to_menu_should_add_it_in_db(
-    test_client, db_api, with_menu_position, json_basic_menu
+    admin_cli, db_api, with_menu_position, json_basic_menu
 ):
-    menu_id = test_client.post("/api/admin/menu", json=json_basic_menu).json()["id"]
+    menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
-    test_client.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
+    admin_cli.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
 
     menu = db_api.get(Menu, menu_id)
     assert len(menu.positions) == 1
@@ -144,41 +144,41 @@ def test_add_menu_position_to_menu_should_add_it_in_db(
 
 
 def test_add_the_same_menu_position_to_menu_should_return_bad_request(
-    test_client, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
-    menu_id = test_client.post("/api/admin/menu", json=json_basic_menu).json()["id"]
+    menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
-    test_client.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
-    res = test_client.post(
+    admin_cli.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
+    res = admin_cli.post(
         f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}"
     )
     assert res.status_code == HTTPStatus.BAD_REQUEST, res.text
 
 
 def test_add_not_existing_menu_position_to_menu_should_return_not_found(
-    test_client, json_basic_menu
+    admin_cli, json_basic_menu
 ):
-    menu_id = test_client.post("/api/admin/menu", json=json_basic_menu).json()["id"]
+    menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
-    res = test_client.post(f"/api/admin/menu/{menu_id}/add_position/123")
+    res = admin_cli.post(f"/api/admin/menu/{menu_id}/add_position/123")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
 def test_add_menu_position_to_not_existing_menu_should_return_not_found(
-    test_client, with_menu_position
+    admin_cli, with_menu_position
 ):
-    res = test_client.post(f"/api/admin/menu/123/add_position/{with_menu_position.id}")
+    res = admin_cli.post(f"/api/admin/menu/123/add_position/{with_menu_position.id}")
     assert res.status_code == HTTPStatus.NOT_FOUND, res.text
 
 
 def test_get_menu_positions_should_return_list_of_menu_positions(
-    test_client, json_basic_menu, with_menu_position
+    admin_cli, json_basic_menu, with_menu_position
 ):
-    menu_id = test_client.post("/api/admin/menu", json=json_basic_menu).json()["id"]
+    menu_id = admin_cli.post("/api/admin/menu", json=json_basic_menu).json()["id"]
 
-    test_client.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
+    admin_cli.post(f"/api/admin/menu/{menu_id}/add_position/{with_menu_position.id}")
 
-    res = test_client.get(f"/api/menu/{menu_id}")
+    res = admin_cli.get(f"/api/menu/{menu_id}")
     assert len(res.json()["positions"]) == 1
 
     position = res.json()["positions"][0]
@@ -194,21 +194,17 @@ def test_get_menu_positions_should_return_list_of_menu_positions(
 
 
 def test_add_menu_position_to_two_different_menus_should_return_ok_message_and_create_records_in_db(
-    db_api, test_client, hundred_menus, hundred_menu_positions
+    db_api, admin_cli, hundred_menus, hundred_menu_positions
 ):
     menu_id_1 = 1
     menu_id_2 = 2
 
     menu_position_id = 1
 
-    res = test_client.post(
-        f"/api/admin/menu/{menu_id_1}/add_position/{menu_position_id}"
-    )
+    res = admin_cli.post(f"/api/admin/menu/{menu_id_1}/add_position/{menu_position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
-    res = test_client.post(
-        f"/api/admin/menu/{menu_id_2}/add_position/{menu_position_id}"
-    )
+    res = admin_cli.post(f"/api/admin/menu/{menu_id_2}/add_position/{menu_position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
     menu_1 = db_api.get(Menu, menu_id_1)
@@ -226,32 +222,32 @@ def test_add_menu_position_to_two_different_menus_should_return_ok_message_and_c
 
 
 def test_remove_position_from_menu_should_return_ok_message(
-    test_client, with_menu_with_position
+    admin_cli, with_menu_with_position
 ):
     menu_id = with_menu_with_position.id
     position_id = with_menu_with_position.positions[0].id
-    res = test_client.post(f"/api/admin/menu/{menu_id}/remove_position/{position_id}")
+    res = admin_cli.post(f"/api/admin/menu/{menu_id}/remove_position/{position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
 
 def test_remove_position_from_menu_should_not_remove_position_from_db(
-    db_api, test_client, with_menu_with_position
+    db_api, admin_cli, with_menu_with_position
 ):
     menu_id = with_menu_with_position.id
     position_id = with_menu_with_position.positions[0].id
-    test_client.post(f"/api/admin/menu/{menu_id}/remove_position/{position_id}")
+    admin_cli.post(f"/api/admin/menu/{menu_id}/remove_position/{position_id}")
 
     db_api.refresh(with_menu_with_position)
     position = db_api.get(MenuPosition, position_id)
     assert position is not None
 
-    res = test_client.get(f"/api/admin/menu/menu_position/{position_id}")
+    res = admin_cli.get(f"/api/admin/menu/menu_position/{position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
     assert res.json()["id"] == position_id
 
 
 def test_remove_position_from_db_should_remove_it_from_menu(
-    test_client, db_api, with_menu_with_position
+    admin_cli, db_api, with_menu_with_position
 ):
     menu_id = with_menu_with_position.id
     position_id = with_menu_with_position.positions[0].id
@@ -259,22 +255,22 @@ def test_remove_position_from_db_should_remove_it_from_menu(
     menu = db_api.get(Menu, menu_id)
     assert len(menu.positions) == 1
 
-    res = test_client.delete(f"/api/admin/menu/menu_position/{position_id}")
+    res = admin_cli.delete(f"/api/admin/menu/menu_position/{position_id}")
     assert res.status_code == HTTPStatus.OK, res.text
 
-    res = test_client.get(f"/api/menu/{menu_id}")
+    res = admin_cli.get(f"/api/menu/{menu_id}")
     assert res.json()["positions"] == []
 
     db_api.refresh(menu)
     assert len(menu.positions) == 0
 
 
-def test_get_menus_should_be_sorted_by_name_by_default(test_client, db_api):
+def test_get_menus_should_be_sorted_by_name_by_default(admin_cli, db_api):
     for name in ["some", "random", "names"]:
         db_api.add(Menu(name=name))
     db_api.commit()
 
-    res = test_client.get("/api/menu")
+    res = admin_cli.get("/api/menu")
     assert res.status_code == HTTPStatus.OK, res.text
 
     menus = res.json()
@@ -284,12 +280,12 @@ def test_get_menus_should_be_sorted_by_name_by_default(test_client, db_api):
     assert menus[2]["name"] == "some"
 
 
-def test_get_menus_filtered_by_name_should_return_filtered_list(test_client, db_api):
+def test_get_menus_filtered_by_name_should_return_filtered_list(admin_cli, db_api):
     for name in ["some", "ransom", "names"]:
         db_api.add(Menu(name=name))
     db_api.commit()
 
-    res = test_client.get("/api/menu", params={"name": "so"})
+    res = admin_cli.get("/api/menu", params={"name": "so"})
     assert res.status_code == HTTPStatus.OK, res.text
 
     menus = res.json()
@@ -299,9 +295,9 @@ def test_get_menus_filtered_by_name_should_return_filtered_list(test_client, db_
 
 
 def test_get_menus_filtered_by_created_after_should_return_filtered_list(
-    test_client, db_api, with_menus_with_different_dates
+    admin_cli, db_api, with_menus_with_different_dates
 ):
-    res = test_client.get("/api/menu", params={"created_after": "2022-01-01T00:00:00"})
+    res = admin_cli.get("/api/menu", params={"created_after": "2022-01-01T00:00:00"})
     assert res.status_code == HTTPStatus.OK, res.text
 
     menus = res.json()
@@ -343,9 +339,9 @@ def test_get_menus_filtered_by_created_after_should_return_filtered_list(
     ],
 )
 def test_get_filtered_menus_should_return_filtered_list(
-    test_client, db_api, with_menus_with_different_dates, params, expected_names
+    admin_cli, db_api, with_menus_with_different_dates, params, expected_names
 ):
-    res = test_client.get("/api/menu", params=params)
+    res = admin_cli.get("/api/menu", params=params)
     assert res.status_code == HTTPStatus.OK, res.text
 
     menus = res.json()

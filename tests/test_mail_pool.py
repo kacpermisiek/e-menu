@@ -42,8 +42,8 @@ def then_mail_pool_should_meet_expectations(
     assert position is not None
 
 
-def test_new_menu_position_should_be_added_to_mail_pool(db_api, test_client):
-    position_id = when_user_create_new_menu_position(test_client)
+def test_new_menu_position_should_be_added_to_mail_pool(db_api, admin_cli):
+    position_id = when_user_create_new_menu_position(admin_cli)
 
     then_position_at_pool_should_be_x_times(db_api, position_id)
     then_mail_pool_should_meet_expectations(
@@ -99,28 +99,28 @@ def when_user_edit_position_yesterday(
     db_api.commit()
 
 
-def test_updated_menu_position_should_be_added_to_mail_pool(db_api, test_client):
+def test_updated_menu_position_should_be_added_to_mail_pool(db_api, admin_cli):
     position = when_position_with_old_creation_date(db_api)
-    when_user_edit_position(test_client, position.id)
+    when_user_edit_position(admin_cli, position.id)
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=1)
 
 
-def test_updated_menu_twice_should_not_add_to_mail_pool_twice(db_api, test_client):
+def test_updated_menu_twice_should_not_add_to_mail_pool_twice(db_api, admin_cli):
     position = when_position_with_old_creation_date(db_api)
-    when_user_edit_position(test_client, position.id)
-    when_user_edit_position(test_client, position.id)
+    when_user_edit_position(admin_cli, position.id)
+    when_user_edit_position(admin_cli, position.id)
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=1)
 
 
 def test_updated_menu_twice_in_other_dates_should_add_to_mail_pool_twice(
-    db_api, test_client
+    db_api, admin_cli
 ):
     position = when_position_with_old_creation_date(db_api)
-    when_user_edit_position_yesterday(db_api, test_client, position.id)
+    when_user_edit_position_yesterday(db_api, admin_cli, position.id)
 
-    when_user_edit_position(test_client, position.id, body={"name": "test_menu3"})
+    when_user_edit_position(admin_cli, position.id, body={"name": "test_menu3"})
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=2)
 
@@ -134,31 +134,31 @@ def deleted_menu_position_should_be_also_deleted_from_mail_pool(db_api, test_cli
 
 
 def test_deleted_menu_position_should_be_also_deleted_if_was_updated_yesterday(
-    db_api, test_client
+    db_api, admin_cli
 ):
     position = when_position_with_old_creation_date(db_api)
-    when_user_edit_position_yesterday(db_api, test_client, position.id)
+    when_user_edit_position_yesterday(db_api, admin_cli, position.id)
 
-    test_client.delete(f"/api/admin/menu/menu_position/{position.id}")
+    admin_cli.delete(f"/api/admin/menu/menu_position/{position.id}")
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=0)
 
 
 def test_deleted_menu_positions_should_remove_all_of_mail_pool_records(
-    db_api, test_client
+    db_api, admin_cli
 ):
     position = when_position_with_old_creation_date(db_api)
-    when_user_edit_position_yesterday(db_api, test_client, position.id)
-    when_user_edit_position(test_client, position.id, body={"name": "test_menu3"})
+    when_user_edit_position_yesterday(db_api, admin_cli, position.id)
+    when_user_edit_position(admin_cli, position.id, body={"name": "test_menu3"})
 
-    test_client.delete(f"/api/admin/menu/menu_position/{position.id}")
+    admin_cli.delete(f"/api/admin/menu/menu_position/{position.id}")
 
     then_position_at_pool_should_be_x_times(db_api, position.id, x=0)
 
 
-def test_created_menu_positions_should_be_added_to_mail_pool(db_api, test_client):
+def test_created_menu_positions_should_be_added_to_mail_pool(db_api, admin_cli):
     position_ids = [
-        when_user_create_new_menu_position(test_client, str(x)) for x in range(10)
+        when_user_create_new_menu_position(admin_cli, str(x)) for x in range(10)
     ]
 
     for position_id in position_ids:

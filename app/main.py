@@ -1,7 +1,15 @@
+from typing import Annotated
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
 from app.api import menu, user
+from app.api.deps import get_db, get_encryption_key
+from app.api.utils import authenticate_user, create_access_token
+from app.schemas.other import Token
 from app.settings import settings
 from app.utils.logger import get_logger, setup_logger
 from app.utils.mail_utils import just_clear_mail_pool, send_mail
@@ -19,6 +27,28 @@ app.include_router(menu.public, prefix="/api/menu", tags=["Menu"])
 app.include_router(menu.admin, prefix="/api/admin/menu", tags=["Menu"])
 app.include_router(user.admin, prefix="/api/admin/user", tags=["User"])
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+@app.post("/token")
+async def login(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db()),
+    encryption_key: bytes = Depends(get_encryption_key),
+):
+    user = authenticate_user(db, pwd_context, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_access_token(data={"sub": user.login})
+    return Token(access_token=access_token, token_type="bearer")
+
 
 async def send_daily_mail():
     if settings.smtp_enabled:
@@ -31,5 +61,5 @@ async def send_daily_mail():
 
 scheduler = AsyncIOScheduler()
 
-scheduler.add_job(send_daily_mail, "interval", seconds=5)
+scheduler.add_job(send_daily_mail, "cron", hour=10)
 scheduler.start()

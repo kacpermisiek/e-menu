@@ -9,8 +9,10 @@ class Settings(BaseSettings):
     version: str = "dev"
 
     encryption_key: SecretStr = SecretStr(
-        "7fc1ec811e9b0271f7d2e9a848a39afb6110a88aa14e8b017d39349e32922901"
+        "ad3be4c4c77d8a68624e9014e7df93c9d9c3b6dd401889a9fffe0e7f62e91189"
     )  # This should be changed in production
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
 
     database: SecretStr = SecretStr("postgresql://alice:xyz@localhost:5432/menu")
 

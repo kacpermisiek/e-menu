@@ -1,7 +1,8 @@
 import datetime
-import uuid
 
 from fastapi import HTTPException
+from jose import jwt
+from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -9,6 +10,8 @@ from sqlalchemy.orm import Session
 from app.db import Base
 from app.models.mail_pool import MailPool
 from app.models.menu import Menu, MenuPosition
+from app.models.user import User
+from app.settings import settings
 from app.utils.enums import UpdateMethod
 
 
@@ -77,5 +80,40 @@ def create_mail_pool_position(db: Session, position_id: int, updated: bool) -> N
     try:
         db.add(mail_pool)
         db.commit()
-    except IntegrityError as e:
+    except IntegrityError:
         db.rollback()
+
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+        minutes=15
+    )
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(
+        to_encode,
+        settings.encryption_key.get_secret_value(),
+        algorithm=settings.algorithm,
+    )
+    return encoded_jwt
+
+
+def verify_password(
+    pwd_context: CryptContext, plain_password: str, hashed_password: str
+) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def authenticate_user(
+    db: Session,
+    pwd_context: CryptContext,
+    login: str,
+    password: str,
+) -> bool | User:
+    user = db.query(User).filter(User.login == login).one_or_none()
+    if user is None:
+        return False
+
+    if verify_password(pwd_context, password, user.password):
+        return user
+    return False
