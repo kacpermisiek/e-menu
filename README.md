@@ -108,6 +108,8 @@ Then you can run the tests:
 ```bash
 pytest
 ```
+Coverage is about 86%.
+
 
 ## Future improvements:
 * Add images for the menu positions: Use S3 to store images and add image_url column for menu_positions table.
