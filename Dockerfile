@@ -11,7 +11,7 @@ RUN pip install poetry && \
 
 COPY ./app /app/app
 COPY ./alembic/. /app/alembic/.
-COPY alembic.ini /app/.
+COPY alembic-db.ini /app/alembic.ini
 
 CMD ["alembic", "upgrade", "head"]
 
