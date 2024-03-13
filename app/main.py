@@ -62,6 +62,7 @@ async def send_daily_mail():
 
 
 scheduler = AsyncIOScheduler()
+scheduler.configure(timezone=settings.scheduler_timezone)
 
 scheduler.add_job(send_daily_mail, "cron", hour=10)
 scheduler.start()

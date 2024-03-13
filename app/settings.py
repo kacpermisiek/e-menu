@@ -26,5 +26,7 @@ class Settings(BaseSettings):
     smtp_user: str = "smtp_user"
     smtp_password: SecretStr = SecretStr("smtp_password")
 
+    scheduler_timezone: str = "Europe/Warsaw"
+
 
 settings = Settings()
